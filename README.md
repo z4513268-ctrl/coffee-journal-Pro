@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>咖啡手记 · 完整版</title>
+    <title>咖啡手记 · 自适应色彩</title>
     <style>
         /* ===== 全局重置 & CSS变量 ===== */
         * {
@@ -16,13 +16,16 @@
         :root {
             --bg-primary: #1a1410;
             --bg-secondary: #2c1e16;
+            --bg-card: rgba(44, 30, 22, 0.85);
             --glow-color: rgba(200, 150, 110, 0.15);
             --accent-1: #c89a78;
             --accent-2: #a87b5e;
             --text-primary: #f0e3d8;
             --text-secondary: #a68979;
-            --card-border: rgba(255, 215, 180, 0.05);
-            --nav-blur: rgba(26, 20, 16, 0.75);
+            --card-border: rgba(255, 215, 180, 0.06);
+            --card-border-light: rgba(255, 215, 180, 0.12);
+            --nav-blur: rgba(26, 20, 16, 0.78);
+            --nav-border: rgba(255, 215, 180, 0.06);
         }
 
         body {
@@ -38,7 +41,6 @@
             transition: background 0.8s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
-        /* ===== 氛围光晕 ===== */
         .ambient-glow {
             position: fixed;
             top: -30%;
@@ -54,12 +56,12 @@
         }
         .main-content,
         .bottom-nav,
-        .record-overlay {
+        .record-overlay,
+        .fortune-modal {
             position: relative;
             z-index: 1;
         }
 
-        /* ===== 主内容 ===== */
         .main-content {
             flex: 1;
             padding: 16px 16px 100px;
@@ -68,7 +70,7 @@
             position: relative;
         }
 
-        /* ===== 面板系统 ===== */
+        /* ===== 面板 ===== */
         .panel {
             display: none;
             animation: fadeSlide 0.3s cubic-bezier(0.32, 0.72, 0, 1);
@@ -101,7 +103,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            transition: background 0.6s ease;
+            transition: all 0.6s ease;
         }
         .page-header .date {
             font-size: 13px;
@@ -117,12 +119,14 @@
 
         /* ===== 卡片 ===== */
         .mock-card {
-            background: linear-gradient(145deg, var(--bg-secondary), rgba(34, 24, 17, 0.8));
+            background: var(--bg-card);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             border-radius: 16px;
             padding: 16px 16px;
             margin-bottom: 12px;
             border: 1px solid var(--card-border);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: 14px;
@@ -147,11 +151,13 @@
             font-size: 15px;
             font-weight: 600;
             color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         .mock-card .info .desc {
             font-size: 13px;
             color: var(--text-secondary);
             margin-top: 2px;
+            transition: color 0.3s ease;
         }
         .mock-card .badge {
             background: var(--bg-secondary);
@@ -173,17 +179,20 @@
             transition: color 0.6s ease;
         }
 
-        /* ===== 今日宜喝卡片（命理） ===== */
+        /* ===== 今日宜喝 ===== */
         .fortune-summary {
-            background: linear-gradient(145deg, var(--bg-secondary), rgba(31, 21, 16, 0.9));
+            background: var(--bg-card);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             border-radius: 16px;
             padding: 16px 18px;
-            border: 1px solid rgba(200, 154, 120, 0.08);
+            border: 1px solid var(--card-border);
             margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 14px;
             transition: all 0.6s ease;
+            cursor: pointer;
         }
         .fortune-summary .icon {
             font-size: 32px;
@@ -191,11 +200,13 @@
         .fortune-summary .info .label {
             font-size: 12px;
             color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
         .fortune-summary .info .value {
             font-size: 16px;
             font-weight: 600;
             color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         .fortune-summary .match-badge {
             margin-left: auto;
@@ -204,13 +215,106 @@
             border-radius: 20px;
             color: var(--accent-1);
             font-size: 13px;
-            border: 1px solid rgba(200, 154, 120, 0.1);
+            border: 1px solid var(--card-border-light);
             transition: all 0.6s ease;
         }
 
-        /* ===== 附近推荐 ===== */
+        /* ===== 附近推荐（在命理弹窗内） ===== */
+        .nearby-shop-list {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--card-border);
+        }
+        .nearby-shop-list .nearby-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nearby-shop-list .nearby-title small {
+            font-weight: 400;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .nearby-shop-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+        .nearby-shop-item:active {
+            transform: scale(0.98);
+        }
+        .nearby-shop-item .shop-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nearby-shop-item .shop-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .nearby-shop-item .shop-info .shop-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .nearby-shop-item .shop-info .shop-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 1px;
+        }
+        .nearby-shop-item .shop-info .shop-tags {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .nearby-shop-item .shop-info .shop-tags span {
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 10px;
+            background: rgba(200, 154, 120, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+        .nearby-shop-item .shop-info .shop-tags .highlight-tag {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+        }
+        .nearby-shop-item .shop-distance {
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .nearby-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 16px 0;
+            opacity: 0.6;
+        }
+
+        /* ===== 附近推荐（报告页内嵌） ===== */
         .shop-card {
-            background: linear-gradient(145deg, var(--bg-secondary), rgba(34, 24, 17, 0.8));
+            background: var(--bg-card);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
@@ -234,19 +338,17 @@
             font-size: 24px;
             transition: background 0.6s ease;
         }
-        .shop-card .info {
-            flex: 1;
-            min-width: 0;
-        }
         .shop-card .info .name {
             font-size: 15px;
             font-weight: 600;
             color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         .shop-card .info .address {
             font-size: 12px;
             color: var(--text-secondary);
             margin-top: 2px;
+            transition: color 0.3s ease;
         }
         .shop-card .info .tags {
             display: flex;
@@ -279,22 +381,17 @@
             line-height: 1.5;
             transition: all 0.6s ease;
         }
-        .shop-card .right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
         .shop-card .right .score {
             font-size: 16px;
             font-weight: 700;
             color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         .shop-card .right .score small {
             font-size: 11px;
             font-weight: 400;
             color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
         .shop-card .right .match-pct {
             font-size: 12px;
@@ -302,7 +399,7 @@
             background: rgba(200, 154, 120, 0.06);
             padding: 2px 12px;
             border-radius: 12px;
-            border: 1px solid rgba(200, 154, 120, 0.1);
+            border: 1px solid var(--card-border-light);
             transition: all 0.6s ease;
         }
         .section-title {
@@ -323,7 +420,7 @@
             font-size: 15px;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             margin-top: 8px;
         }
         .refresh-btn:active {
@@ -342,12 +439,12 @@
             background: var(--nav-blur);
             backdrop-filter: blur(24px) saturate(180%);
             -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border-top: 0.5px solid var(--card-border);
+            border-top: 0.5px solid var(--nav-border);
             display: flex;
             align-items: flex-start;
             justify-content: space-around;
             z-index: 100;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
             transition: all 0.6s ease;
         }
         .nav-item {
@@ -379,6 +476,7 @@
             font-size: 10px;
             font-weight: 500;
             opacity: 0.7;
+            transition: color 0.3s ease;
         }
         .nav-item.active {
             color: var(--accent-1);
@@ -402,7 +500,6 @@
             opacity: 1;
         }
 
-        /* FAB */
         .nav-item.fab {
             position: relative;
             top: -18px;
@@ -456,9 +553,9 @@
         .record-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(10, 6, 4, 0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(10, 6, 4, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             z-index: 200;
             display: none;
             flex-direction: column;
@@ -479,7 +576,9 @@
             }
         }
         .record-sheet {
-            background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+            background: var(--bg-card);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 32px 32px 0 0;
             padding: 20px 20px 34px;
             max-height: 88vh;
@@ -499,16 +598,15 @@
             font-size: 22px;
             font-weight: 600;
             color: var(--text-primary);
-            transition: color 0.6s ease;
+            transition: color 0.3s ease;
         }
         .record-sheet .sub {
             font-size: 14px;
             color: var(--text-secondary);
             margin-bottom: 16px;
-            transition: color 0.6s ease;
+            transition: color 0.3s ease;
         }
 
-        /* 轮盘 */
         .wheel-container {
             display: flex;
             justify-content: center;
@@ -617,13 +715,14 @@
             box-shadow: 0 6px 24px rgba(76, 175, 80, 0.3);
         }
 
-        /* ===== 命理弹窗（精简内嵌） ===== */
+        /* ===== 命理弹窗 ===== */
         .fortune-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(10, 6, 4, 0.9);
+            background: rgba(10, 6, 4, 0.88);
             backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             z-index: 300;
             align-items: center;
             justify-content: center;
@@ -644,16 +743,30 @@
             }
         }
         .fortune-modal .card {
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
-            background: linear-gradient(160deg, #2c1e16, #1a1410);
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 32px;
             padding: 32px 24px 28px;
-            border: 1px solid rgba(255, 215, 180, 0.06);
+            border: 1px solid var(--card-border);
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
-            max-height: 90vh;
+            max-height: 92vh;
             overflow-y: auto;
+            transition: all 0.6s ease;
         }
+        .fortune-modal .card::-webkit-scrollbar {
+            width: 3px;
+        }
+        .fortune-modal .card::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .fortune-modal .card::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 10px;
+        }
+
         .fortune-modal .card .compass {
             width: 72px;
             height: 72px;
@@ -687,14 +800,15 @@
             text-align: center;
             font-size: 20px;
             font-weight: 600;
-            background: linear-gradient(135deg, #f5e3d4, #c89a78);
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-1));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .fortune-modal .card .modal-sub {
             text-align: center;
             font-size: 13px;
-            color: #8a7365;
+            color: var(--text-secondary);
             margin-bottom: 20px;
         }
         .fortune-modal .card .input-group {
@@ -708,9 +822,9 @@
             min-width: 70px;
             padding: 12px 12px;
             border-radius: 12px;
-            background: #2c1e16;
-            border: 1px solid #3d2b20;
-            color: #f0e3d8;
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
             font-size: 14px;
             font-family: inherit;
             appearance: none;
@@ -718,23 +832,28 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7365' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
+            transition: all 0.3s ease;
         }
         .fortune-modal .card .input-group select:focus {
             outline: none;
-            border-color: #c89a78;
+            border-color: var(--accent-1);
+        }
+        .fortune-modal .card .input-group select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
         .fortune-modal .card .btn-generate {
             width: 100%;
             padding: 14px;
             border-radius: 14px;
             border: none;
-            background: linear-gradient(145deg, #c89a78, #a87b5e);
+            background: linear-gradient(145deg, var(--accent-1), var(--accent-2));
             color: #fff;
             font-size: 16px;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             box-shadow: 0 6px 24px rgba(200, 154, 120, 0.2);
         }
         .fortune-modal .card .btn-generate:active {
@@ -745,8 +864,9 @@
             padding: 18px 16px;
             border-radius: 16px;
             background: rgba(200, 154, 120, 0.04);
-            border: 1px solid rgba(200, 154, 120, 0.06);
+            border: 1px solid var(--card-border);
             display: none;
+            transition: all 0.3s ease;
         }
         .fortune-modal .card .result.visible {
             display: block;
@@ -757,23 +877,25 @@
             padding: 3px 14px;
             border-radius: 16px;
             font-size: 11px;
-            color: #c89a78;
-            border: 1px solid rgba(200, 154, 120, 0.1);
+            color: var(--accent-1);
+            border: 1px solid var(--card-border-light);
             margin-bottom: 8px;
         }
         .fortune-modal .card .result .main {
             font-size: 22px;
             font-weight: 700;
-            color: #f5e3d4;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         .fortune-modal .card .result .sub {
             font-size: 14px;
-            color: #a68979;
+            color: var(--text-secondary);
             margin-bottom: 10px;
+            transition: color 0.3s ease;
         }
         .fortune-modal .card .result .divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(200, 154, 120, 0.12), transparent);
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
             margin: 12px 0;
         }
         .fortune-modal .card .result .row {
@@ -783,22 +905,25 @@
             font-size: 13px;
         }
         .fortune-modal .card .result .row .label {
-            color: #8a7365;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
         .fortune-modal .card .result .row .value {
-            color: #f0e3d8;
+            color: var(--text-primary);
             font-weight: 500;
+            transition: color 0.3s ease;
         }
         .fortune-modal .card .result .mindful {
             margin-top: 12px;
             padding: 12px 14px;
             background: rgba(200, 154, 120, 0.04);
             border-radius: 10px;
-            border-left: 2px solid #c89a78;
+            border-left: 2px solid var(--accent-1);
             font-size: 14px;
             line-height: 1.6;
-            color: #d5c4b8;
+            color: var(--text-secondary);
             font-style: italic;
+            transition: all 0.3s ease;
         }
         .fortune-modal .card .result .mindful::before {
             content: '🧘 ';
@@ -809,17 +934,32 @@
             margin-top: 16px;
             padding: 12px;
             border-radius: 14px;
-            border: 1px solid #3d2b20;
+            border: 1px solid var(--card-border);
             background: transparent;
-            color: #8a7365;
+            color: var(--text-secondary);
             font-size: 15px;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
         .fortune-modal .card .close-btn:active {
-            background: #2c1e16;
+            background: var(--bg-secondary);
             transform: scale(0.96);
+        }
+
+        /* 弹窗内滚动条美化 */
+        .fortune-modal .card .nearby-shop-list {
+            max-height: 260px;
+            overflow-y: auto;
+            margin-right: -4px;
+            padding-right: 4px;
+        }
+        .fortune-modal .card .nearby-shop-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        .fortune-modal .card .nearby-shop-list::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -840,17 +980,16 @@
                 <span class="date" id="todayDate">6月21日</span>
             </div>
 
-            <!-- 今日宜喝摘要 -->
-            <div class="fortune-summary" id="fortuneSummary" style="cursor:pointer;">
+            <!-- ★ 修改点1: "查看命理" → "查看解读" -->
+            <div class="fortune-summary" id="fortuneSummary">
                 <span class="icon">🔮</span>
                 <div class="info">
                     <div class="label">今日宜喝</div>
                     <div class="value" id="summaryBean">埃塞俄比亚·花魁</div>
                 </div>
-                <span class="match-badge" id="summaryBadge">✨ 查看命理</span>
+                <span class="match-badge">✨ 查看解读</span>
             </div>
 
-            <!-- 时间线记录 -->
             <div class="mock-card">
                 <div class="avatar">🌺</div>
                 <div class="info">
@@ -886,23 +1025,23 @@
             </div>
             <div style="text-align:center; padding:20px 0 30px;">
                 <span style="font-size:72px; display:block; margin-bottom:12px;">🌱</span>
-                <div style="font-size:20px; font-weight:600; color:var(--text-primary);">风味探险家 · 萌芽期</div>
-                <div style="font-size:14px; color:var(--text-secondary); margin-top:4px;">记录满 10 杯解锁完整人格报告</div>
-                <div style="width:80%; max-width:280px; height:6px; background:var(--bg-secondary); border-radius:6px; margin:16px auto 0; overflow:hidden;">
+                <div style="font-size:20px; font-weight:600; color:var(--text-primary); transition:color 0.3s ease;">风味探险家 · 萌芽期</div>
+                <div style="font-size:14px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">记录满 10 杯解锁完整人格报告</div>
+                <div style="width:80%; max-width:280px; height:6px; background:var(--bg-secondary); border-radius:6px; margin:16px auto 0; overflow:hidden; transition:background 0.6s ease;">
                     <div style="width:50%; height:100%; background:linear-gradient(90deg, var(--accent-1), var(--accent-2)); border-radius:6px; transition:all 0.6s ease;"></div>
                 </div>
-                <div style="margin-top:8px; font-size:13px; color:var(--text-secondary);">进度 5 / 10 杯</div>
+                <div style="margin-top:8px; font-size:13px; color:var(--text-secondary); transition:color 0.3s ease;">进度 5 / 10 杯</div>
             </div>
-            <div style="background:var(--bg-secondary); border-radius:14px; padding:16px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
+            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--text-secondary); font-size:14px;">已解锁标签</span>
+                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">已解锁标签</span>
                     <span style="color:var(--accent-1); font-size:13px;">+3 杯解锁新标签</span>
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary);">🌸 花香</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary);">🍊 果酸</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary);">⬜ 待解锁</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary);">⬜ 待解锁</span>
+                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary); transition:all 0.3s ease;">🌸 花香</span>
+                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary); transition:all 0.3s ease;">🍊 果酸</span>
+                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary); transition:all 0.3s ease;">⬜ 待解锁</span>
+                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary); transition:all 0.3s ease;">⬜ 待解锁</span>
                 </div>
             </div>
             <div class="bottom-hint">— 持续记录，解锁更多 —</div>
@@ -914,11 +1053,11 @@
                 <h1>🌊 同好漂流瓶</h1>
                 <span class="date">今日匹配</span>
             </div>
-            <div style="background:linear-gradient(135deg, var(--bg-secondary), rgba(31,21,16,0.8)); border-radius:14px; padding:14px 16px; border:1px solid var(--card-border); margin-bottom:16px; display:flex; align-items:center; gap:12px; transition:all 0.6s ease;">
+            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:14px 16px; border:1px solid var(--card-border); margin-bottom:16px; display:flex; align-items:center; gap:12px; transition:all 0.6s ease;">
                 <span style="font-size:28px;">🧩</span>
                 <div>
-                    <div style="font-size:14px; color:var(--text-primary); font-weight:500;">基于风味相似度匹配</div>
-                    <div style="font-size:12px; color:var(--text-secondary);">找到 3 位口味相近的咖友</div>
+                    <div style="font-size:14px; color:var(--text-primary); font-weight:500; transition:color 0.3s ease;">基于风味相似度匹配</div>
+                    <div style="font-size:12px; color:var(--text-secondary); transition:color 0.3s ease;">找到 3 位口味相近的咖友</div>
                 </div>
             </div>
             <div class="mock-card">
@@ -927,7 +1066,7 @@
                     <div class="title">@咖啡探险家</div>
                     <div class="desc">🏆 共同偏好：花香 · 果酸</div>
                 </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid rgba(200,154,120,0.2); flex-shrink:0; transition:all 0.6s ease;">92% 匹配</span>
+                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">92% 匹配</span>
             </div>
             <div class="mock-card">
                 <div class="avatar">🌿</div>
@@ -935,7 +1074,7 @@
                     <div class="title">@风味猎人</div>
                     <div class="desc">🏆 共同偏好：发酵感 · 醇厚</div>
                 </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid rgba(200,154,120,0.2); flex-shrink:0; transition:all 0.6s ease;">87% 匹配</span>
+                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">87% 匹配</span>
             </div>
             <div class="mock-card">
                 <div class="avatar">🍃</div>
@@ -943,7 +1082,7 @@
                     <div class="title">@手冲星人</div>
                     <div class="desc">🏆 共同偏好：茶感 · 干净</div>
                 </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid rgba(200,154,120,0.2); flex-shrink:0; transition:all 0.6s ease;">81% 匹配</span>
+                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">81% 匹配</span>
             </div>
             <div style="text-align:center; padding:12px 0 4px;">
                 <span style="background:var(--bg-secondary); padding:10px 28px; border-radius:30px; color:var(--accent-1); font-size:14px; border:1px solid var(--card-border); display:inline-block; transition:all 0.6s ease;">📨 发送「隔空共饮」邀请</span>
@@ -958,35 +1097,34 @@
                 <span class="date">6 月趋势</span>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px;">
-                <div style="background:var(--bg-secondary); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary);">12</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">本月杯数</div>
+                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
+                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">12</div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">本月杯数</div>
                 </div>
-                <div style="background:var(--bg-secondary); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary);">6</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">探索产地</div>
+                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
+                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">6</div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">探索产地</div>
                 </div>
-                <div style="background:var(--bg-secondary); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary);">4.7</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">平均评分</div>
+                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
+                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">4.7</div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">平均评分</div>
                 </div>
             </div>
-            <div style="background:var(--bg-secondary); border-radius:14px; padding:16px 18px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
+            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 18px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
                 <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
-                    <span style="color:var(--text-secondary); font-size:14px;">🌍 最爱产区</span>
-                    <span style="color:var(--text-primary); font-size:14px; font-weight:500;">埃塞俄比亚</span>
+                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">🌍 最爱产区</span>
+                    <span style="color:var(--text-primary); font-size:14px; font-weight:500; transition:color 0.3s ease;">埃塞俄比亚</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
-                    <span style="color:var(--text-secondary); font-size:14px;">🏷️ 风味标签</span>
-                    <span style="color:var(--text-primary); font-size:14px; font-weight:500;">花香 · 果酸 · 茶感</span>
+                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">🏷️ 风味标签</span>
+                    <span style="color:var(--text-primary); font-size:14px; font-weight:500; transition:color 0.3s ease;">花香 · 果酸 · 茶感</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                    <span style="color:var(--text-secondary); font-size:14px;">📈 本月趋势</span>
+                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">📈 本月趋势</span>
                     <span style="color:#4CAF50; font-size:14px; font-weight:500;">↑ 偏好向浅烘偏移</span>
                 </div>
             </div>
 
-            <!-- 附近推荐区域（内嵌在报告页，也可作为独立模块） -->
             <div class="section-title">📍 附近 · 风味匹配</div>
             <div class="shop-card">
                 <div class="thumb">☕</div>
@@ -1093,22 +1231,22 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- 命理弹窗 -->
+    <!-- 命理弹窗（含附近同款推荐） -->
     <!-- ========================================================= -->
     <div class="fortune-modal" id="fortuneModal">
         <div class="card">
             <div class="compass">
                 <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="46" fill="none" stroke="#3d2b20" stroke-width="1"/>
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#4d382b" stroke-width="0.5" stroke-dasharray="4 4"/>
-                    <line x1="50" y1="4" x2="50" y2="20" stroke="#c89a78" stroke-width="1.5"/>
-                    <line x1="50" y1="80" x2="50" y2="96" stroke="#c89a78" stroke-width="1.5"/>
-                    <line x1="4" y1="50" x2="20" y2="50" stroke="#c89a78" stroke-width="1.5"/>
-                    <line x1="80" y1="50" x2="96" y2="50" stroke="#c89a78" stroke-width="1.5"/>
-                    <text x="50" y="14" text-anchor="middle" fill="#8a7365" font-size="6">北</text>
-                    <text x="50" y="94" text-anchor="middle" fill="#8a7365" font-size="6">南</text>
-                    <text x="10" y="54" text-anchor="middle" fill="#8a7365" font-size="6">西</text>
-                    <text x="90" y="54" text-anchor="middle" fill="#8a7365" font-size="6">东</text>
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="var(--card-border)" stroke-width="1"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--card-border)" stroke-width="0.5" stroke-dasharray="4 4"/>
+                    <line x1="50" y1="4" x2="50" y2="20" stroke="var(--accent-1)" stroke-width="1.5"/>
+                    <line x1="50" y1="80" x2="50" y2="96" stroke="var(--accent-1)" stroke-width="1.5"/>
+                    <line x1="4" y1="50" x2="20" y2="50" stroke="var(--accent-1)" stroke-width="1.5"/>
+                    <line x1="80" y1="50" x2="96" y2="50" stroke="var(--accent-1)" stroke-width="1.5"/>
+                    <text x="50" y="14" text-anchor="middle" fill="var(--text-secondary)" font-size="6">北</text>
+                    <text x="50" y="94" text-anchor="middle" fill="var(--text-secondary)" font-size="6">南</text>
+                    <text x="10" y="54" text-anchor="middle" fill="var(--text-secondary)" font-size="6">西</text>
+                    <text x="90" y="54" text-anchor="middle" fill="var(--text-secondary)" font-size="6">东</text>
                 </svg>
                 <div class="label">☯</div>
             </div>
@@ -1124,7 +1262,7 @@
                 </select>
                 <select id="birthDay"></select>
             </div>
-            <button class="btn-generate" id="generateBtn">🔮 查看今日命理</button>
+            <button class="btn-generate" id="generateBtn">🔮 查看今日解读</button>
             <div class="result" id="fortuneResult">
                 <span class="tag" id="fTag">✦ 今日宜 · 向上生长</span>
                 <div class="main" id="fMain">埃塞俄比亚·花魁</div>
@@ -1135,6 +1273,17 @@
                 <div class="row"><span class="label">推荐烘焙度</span><span class="value" id="fRoast">—</span></div>
                 <div class="row"><span class="label">饮用温度</span><span class="value" id="fTemp">—</span></div>
                 <div class="mindful" id="fMindful">今日宜·向上生长，让花香唤醒你内在的创造力。每一口都是与自己的对话。</div>
+
+                <!-- ★ 修改点2: 附近同款推荐 -->
+                <div class="nearby-shop-list" id="nearbyShopList">
+                    <div class="nearby-title">
+                        📍 附近同款推荐
+                        <small>· 根据今日宜喝匹配</small>
+                    </div>
+                    <div id="nearbyShopsContainer">
+                        <!-- 由JS动态渲染 -->
+                    </div>
+                </div>
             </div>
             <button class="close-btn" id="closeFortune">✕ 关闭</button>
         </div>
@@ -1146,6 +1295,20 @@
     <script>
         (function() {
             'use strict';
+
+            // =========================================================
+            // 工具函数
+            // =========================================================
+            function hexToRgb(hex) {
+                const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 200, g: 150,
+                    b: 110 };
+            }
+
+            function rgbToHex(r, g, b) {
+                const c = (v) => Math.max(0, Math.min(255, Math.round(v)));
+                return '#' + [c(r), c(g), c(b)].map(v => v.toString(16).padStart(2, '0')).join('');
+            }
 
             // =========================================================
             // 一、动态色彩系统
@@ -1161,15 +1324,23 @@
                 fermented: { low: '#c5c0b8', high: '#7a4a5a' },
             };
 
-            function hexToRgb(hex) {
-                const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 200, g: 150,
-                    b: 110 };
+            function getColorBrightness(hex) {
+                const rgb = hexToRgb(hex);
+                return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
             }
 
-            function rgbToHex(r, g, b) {
-                const c = (v) => Math.max(0, Math.min(255, Math.round(v)));
-                return '#' + [c(r), c(g), c(b)].map(v => v.toString(16).padStart(2, '0')).join('');
+            function getContrastText(hex) {
+                return getColorBrightness(hex) > 160 ? '#1a1410' : '#f0e3d8';
+            }
+
+            function getBorderColor(hex, opacity) {
+                const rgb = hexToRgb(hex);
+                return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity || 0.06})`;
+            }
+
+            function getCardBg(hex, opacity) {
+                const rgb = hexToRgb(hex);
+                return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity || 0.85})`;
             }
 
             function posToVector(x, y) {
@@ -1186,14 +1357,26 @@
 
             function vectorToColors(vector) {
                 if (!vector || vector.length < 8) {
-                    return { primary: '#1a1410', secondary: '#2c1e16', glow: 'rgba(200,150,110,0.15)', accent1: '#c89a78',
-                        accent2: '#a87b5e', textPrimary: '#f0e3d8', textSecondary: '#a68979' };
+                    return {
+                        primary: '#1a1410',
+                        secondary: '#2c1e16',
+                        cardBg: 'rgba(44,30,22,0.85)',
+                        glow: 'rgba(200,150,110,0.15)',
+                        accent1: '#c89a78',
+                        accent2: '#a87b5e',
+                        textPrimary: '#f0e3d8',
+                        textSecondary: '#a68979',
+                        border: 'rgba(255,215,180,0.06)',
+                        borderLight: 'rgba(255,215,180,0.12)',
+                    };
                 }
+
                 const dims = ['acid', 'sweet', 'bitter', 'body', 'fruity', 'floral', 'nutty', 'fermented'];
                 let mr = 0,
                     mg = 0,
                     mb = 0,
                     tw = 0;
+
                 dims.forEach((key, i) => {
                     const val = Math.max(0, Math.min(10, vector[i] || 5));
                     const w = val / 10;
@@ -1208,33 +1391,74 @@
                     mb += b * inf;
                     tw += inf;
                 });
+
                 mr = Math.round(mr / tw);
                 mg = Math.round(mg / tw);
                 mb = Math.round(mb / tw);
-                const primary = rgbToHex(mr - 30, mg - 25, mb - 20);
-                const secondary = rgbToHex(mr + 20, mg + 25, mb + 30);
-                const accent1 = rgbToHex(Math.min(255, mr + 40), Math.min(255, mg - 10), Math.min(255, mb - 30));
-                const accent2 = rgbToHex(Math.min(255, mr - 20), Math.min(255, mg + 20), Math.min(255, mb + 10));
+
+                const primary = rgbToHex(
+                    Math.max(10, Math.min(245, mr - 25)),
+                    Math.max(10, Math.min(245, mg - 20)),
+                    Math.max(10, Math.min(245, mb - 15))
+                );
+                const secondary = rgbToHex(
+                    Math.max(10, Math.min(245, mr + 25)),
+                    Math.max(10, Math.min(245, mg + 30)),
+                    Math.max(10, Math.min(245, mb + 35))
+                );
+
+                const accent1 = rgbToHex(
+                    Math.max(10, Math.min(255, mr + 45)),
+                    Math.max(10, Math.min(255, mg - 5)),
+                    Math.max(10, Math.min(255, mb - 25))
+                );
+                const accent2 = rgbToHex(
+                    Math.max(10, Math.min(255, mr - 15)),
+                    Math.max(10, Math.min(255, mg + 25)),
+                    Math.max(10, Math.min(255, mb + 15))
+                );
+
                 const glow = `rgba(${mr}, ${mg}, ${mb}, 0.15)`;
-                const br = (mr * 299 + mg * 587 + mb * 114) / 1000;
-                const textPrimary = br > 160 ? '#1a1410' : '#f0e3d8';
-                const textSecondary = br > 160 ? '#4a3a30' : '#a68979';
-                return { primary, secondary, glow, accent1, accent2, textPrimary, textSecondary };
+                const textPrimary = getContrastText(primary);
+                const textSecondary = getContrastText(secondary);
+                const border = getBorderColor(primary, 0.06);
+                const borderLight = getBorderColor(primary, 0.12);
+                const cardBg = getCardBg(primary, 0.85);
+
+                return {
+                    primary,
+                    secondary,
+                    cardBg,
+                    glow,
+                    accent1,
+                    accent2,
+                    textPrimary,
+                    textSecondary,
+                    border,
+                    borderLight,
+                };
             }
 
             function applyColors(colors) {
                 const root = document.documentElement;
                 root.style.setProperty('--bg-primary', colors.primary);
                 root.style.setProperty('--bg-secondary', colors.secondary);
+                root.style.setProperty('--bg-card', colors.cardBg);
                 root.style.setProperty('--glow-color', colors.glow);
                 root.style.setProperty('--accent-1', colors.accent1);
                 root.style.setProperty('--accent-2', colors.accent2);
                 root.style.setProperty('--text-primary', colors.textPrimary);
                 root.style.setProperty('--text-secondary', colors.textSecondary);
+                root.style.setProperty('--card-border', colors.border);
+                root.style.setProperty('--card-border-light', colors.borderLight);
+
+                const navRgb = hexToRgb(colors.primary);
+                root.style.setProperty('--nav-blur', `rgba(${navRgb.r}, ${navRgb.g}, ${navRgb.b}, 0.78)`);
+                root.style.setProperty('--nav-border', colors.border);
+
                 const glow = document.getElementById('ambientGlow');
                 glow.style.background = `radial-gradient(circle at 40% 30%, ${colors.glow}, transparent 70%)`;
-                const navBg = hexToRgb(colors.primary);
-                root.style.setProperty('--nav-blur', `rgba(${navBg.r}, ${navBg.g}, ${navBg.b}, 0.75)`);
+
                 document.body.style.background = colors.primary;
             }
 
@@ -1248,6 +1472,7 @@
             const size = 400,
                 center = size / 2,
                 radius = 170;
+
             const flavorMap = [
                 { x: -1.0, y: -1.0, main: '明亮果酸', sub: '酸 · 清爽' },
                 { x: -0.7, y: -0.3, main: '柑橘酸甜', sub: '酸 · 平衡' },
@@ -1264,6 +1489,7 @@
                 { x: 0.9, y: -0.9, main: '强烈烟熏', sub: '苦 · 厚重' },
                 { x: -0.9, y: 0.9, main: '玫瑰蜜桃', sub: '花香 · 甜感' },
             ];
+
             let posX = 0.0,
                 posY = -0.15,
                 isDragging = false;
@@ -1373,6 +1599,7 @@
                 e.preventDefault(); }
 
             function onEnd(e) { isDragging = false; if (navigator.vibrate) navigator.vibrate(8); }
+
             canvas.addEventListener('mousedown', onStart);
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onEnd);
@@ -1383,7 +1610,7 @@
             updateUI(posX, posY);
 
             // =========================================================
-            // 三、命理系统
+            // 三、命理系统 + 附近同款推荐
             // =========================================================
             const LIFE_MAP = {
                 1: { flavor: '明亮果酸', bean: '埃塞俄比亚·花魁', sub: '明亮果酸 · 花香 · 茶感', element: '火' },
@@ -1405,6 +1632,59 @@
             };
             const ELEM_NAMES = { '木': '木·生长', '火': '火·热情', '土': '土·稳定', '金': '金·锐意', '水': '水·沉静' };
             const LIFE_NAMES = ['独立·创新', '平衡·和谐', '创意·表达', '稳定·踏实', '冒险·自由', '关爱·责任', '深思·内省', '力量·成就', '智慧·包容'];
+
+            // ★ 附近咖啡店数据库（模拟）
+            const NEARBY_SHOPS = [{
+                id: 1,
+                name: '叁舍咖啡 · 手冲专门店',
+                icon: '☕',
+                address: '天河路 228 号',
+                distance: '320m',
+                beans: ['花魁', '瑰夏', '肯尼亚'],
+                tags: ['浅烘', '手冲', 'SOE'],
+                rating: 4.7,
+                comment: '花魁手冲花香炸裂'
+            }, {
+                id: 2,
+                name: '瑰夏·花园咖啡',
+                icon: '🌸',
+                address: '花城大道 89 号',
+                distance: '480m',
+                beans: ['瑰夏', '花魁', '哥伦比亚'],
+                tags: ['中浅烘', 'SOE', '冰冲'],
+                rating: 4.5,
+                comment: '冰冲瑰夏柑橘蜂蜜味绝了'
+            }, {
+                id: 3,
+                name: '豆仓 · 精品咖啡',
+                icon: '🌰',
+                address: '体育西路 102 号',
+                distance: '650m',
+                beans: ['曼特宁', '巴西', '哥伦比亚'],
+                tags: ['深烘', '意式', '拼配'],
+                rating: 4.3,
+                comment: '深烘曼特宁奶油坚果香很正'
+            }, {
+                id: 4,
+                name: '黑胶咖啡 · 肯尼亚专场',
+                icon: '🍇',
+                address: '黄埔大道 56 号',
+                distance: '820m',
+                beans: ['肯尼亚', '埃塞', '花魁'],
+                tags: ['中烘', '水洗', '单品'],
+                rating: 4.2,
+                comment: '肯尼亚AA莓果调性突出，酒韵悠长'
+            }, {
+                id: 5,
+                name: '微光 · 咖啡实验室',
+                icon: '🔬',
+                address: '珠江新城 花城汇 负一层',
+                distance: '1.1km',
+                beans: ['瑰夏', '埃塞', '秘鲁'],
+                tags: ['浅烘', '手冲', '创意特调'],
+                rating: 4.6,
+                comment: '埃塞豆子新鲜，草莓香气明显'
+            }, ];
 
             function getLifeNumber(y, m, d) {
                 let s = y + m + d;
@@ -1432,7 +1712,69 @@
                 return (prefixes[num] || '让这杯咖啡陪你度过今日。') + ' ' + (ROAST_MAP[elem]?.word || '静心品味') + '。每一口都是与自己的对话。';
             }
 
-            // 填充下拉
+            // ★ 根据今日推荐豆种筛选附近店铺
+            function getNearbyShopsByBean(targetBean) {
+                if (!targetBean) return NEARBY_SHOPS.slice(0, 3);
+
+                // 提取豆种关键词（如"花魁"、"瑰夏"）
+                const keywords = targetBean.replace(/·/g, ' ').split(/\s+/);
+                const mainKeyword = keywords[0] || targetBean;
+
+                // 按匹配度排序
+                const scored = NEARBY_SHOPS.map(shop => {
+                    let score = 0;
+                    shop.beans.forEach(bean => {
+                        if (bean.includes(mainKeyword) || mainKeyword.includes(bean)) {
+                            score += 3;
+                        }
+                        // 模糊匹配
+                        if (bean.includes(targetBean.substring(0, 2)) || targetBean.includes(bean.substring(0,
+                                2))) {
+                            score += 1;
+                        }
+                    });
+                    // 评分加权
+                    score += (shop.rating - 4) * 1.5;
+                    return { ...shop, matchScore: score };
+                });
+
+                // 按匹配度降序排序，取前5
+                scored.sort((a, b) => b.matchScore - a.matchScore);
+                return scored.slice(0, 5);
+            }
+
+            // ★ 渲染附近店铺列表
+            function renderNearbyShops(shops) {
+                const container = document.getElementById('nearbyShopsContainer');
+                if (!shops || shops.length === 0) {
+                    container.innerHTML = `<div class="nearby-empty">📍 附近暂未找到同款咖啡店<br><small>试试手动搜索</small></div>`;
+                    return;
+                }
+
+                let html = '';
+                shops.forEach(shop => {
+                    const beanTags = shop.beans.map(b =>
+                        `<span class="highlight-tag">🏷️ ${b}</span>`
+                    ).join('');
+                    html += `
+                        <div class="nearby-shop-item">
+                            <div class="shop-icon">${shop.icon}</div>
+                            <div class="shop-info">
+                                <div class="shop-name">${shop.name}</div>
+                                <div class="shop-desc">⭐ ${shop.rating} · ${shop.comment}</div>
+                                <div class="shop-tags">
+                                    ${beanTags}
+                                    ${shop.tags.map(t => `<span>${t}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div class="shop-distance">📍 ${shop.distance}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            // ---- 填充下拉 ----
             const ySel = document.getElementById('birthYear'),
                 dSel = document.getElementById('birthDay');
             for (let y = 2026; y >= 1900; y--) { const o = document.createElement('option');
@@ -1444,6 +1786,7 @@
                 o.textContent = d + '日'; if (d === 15) o.selected = true;
                 dSel.appendChild(o); }
 
+            // ---- 生成命理 + 附近推荐 ----
             function generateFortune() {
                 const y = parseInt(document.getElementById('birthYear').value);
                 const m = parseInt(document.getElementById('birthMonth').value);
@@ -1452,6 +1795,8 @@
                 const elem = getElement(y);
                 const data = LIFE_MAP[num] || LIFE_MAP[5];
                 const roast = ROAST_MAP[elem] || ROAST_MAP['土'];
+
+                // 更新命理信息
                 document.getElementById('fTag').textContent = '✦ ' + roast.word;
                 document.getElementById('fMain').textContent = data.bean;
                 document.getElementById('fSub').textContent = data.sub;
@@ -1461,8 +1806,14 @@
                 document.getElementById('fTemp').textContent = roast.temp;
                 document.getElementById('fMindful').textContent = getMindfulness(num, elem);
                 document.getElementById('fortuneResult').classList.add('visible');
+
                 // 更新首页摘要
                 document.getElementById('summaryBean').textContent = data.bean;
+
+                // ★ 根据今日推荐豆种匹配附近店铺
+                const nearbyShops = getNearbyShopsByBean(data.bean);
+                renderNearbyShops(nearbyShops);
+
                 if (navigator.vibrate) navigator.vibrate(10);
             }
 
@@ -1497,7 +1848,6 @@
                         t); });
             });
 
-            // 命理弹窗
             document.getElementById('fortuneSummary').addEventListener('click', function() {
                 fortuneModal.classList.add('open');
                 generateFortune();
@@ -1505,7 +1855,6 @@
             closeFortune.addEventListener('click', function() { fortuneModal.classList.remove('open'); });
             fortuneModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
 
-            // 记录浮层
             fab.addEventListener('click', function(e) {
                 e.preventDefault();
                 overlay.classList.add('open');
@@ -1539,7 +1888,6 @@
                         this.className = 'btn btn-done'; }, 300); }, 700);
             });
 
-            // 下滑关闭浮层
             let startY = 0;
             overlay.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; }, { passive: true });
             overlay.addEventListener('touchmove', function(e) {
@@ -1553,7 +1901,6 @@
                 }
             });
 
-            // 快捷标签
             document.querySelectorAll('.tag-scroll .tag').forEach(tag => {
                 tag.addEventListener('click', function() {
                     document.querySelectorAll('.tag-scroll .tag').forEach(t => t.classList.remove('active'));
@@ -1562,7 +1909,6 @@
                 });
             });
 
-            // 附近推荐刷新
             document.getElementById('refreshBtn').addEventListener('click', function() {
                 const reasons = [
                     '💡 大众点评：“花魁手冲花香炸裂，与你今日命理高度匹配。”',
@@ -1583,15 +1929,13 @@
                 setTimeout(() => { this.textContent = orig; }, 1000);
             });
 
-            // 设置日期
             const now = new Date();
             document.getElementById('todayDate').textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
 
-            // 初始命理生成
             setTimeout(generateFortune, 100);
-
-            console.log('☕ 咖啡手记 · 完整版已启动！');
-            console.log('📱 包含：轮盘色彩系统 · 命理推荐 · 附近匹配 · 多面板切换');
+            console.log('☕ 咖啡手记 · 自适应色彩版已启动！');
+            console.log('✅ 字体颜色根据背景亮度自动切换，保持清晰可读');
+            console.log('📍 「查看解读」中新增附近同款咖啡店推荐');
 
         })();
     </script>
