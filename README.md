@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>咖啡手记 · 自适应色彩</title>
+    <title>咖啡手记 · 完整版 v5.0</title>
     <style>
-        /* ===== 全局重置 & CSS变量 ===== */
+        /* ===== 全局重置 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -26,6 +26,8 @@
             --card-border-light: rgba(255, 215, 180, 0.12);
             --nav-blur: rgba(26, 20, 16, 0.78);
             --nav-border: rgba(255, 215, 180, 0.06);
+            --success: #4CAF50;
+            --warning: #f0a030;
         }
 
         body {
@@ -57,7 +59,9 @@
         .main-content,
         .bottom-nav,
         .record-overlay,
-        .fortune-modal {
+        .fortune-modal,
+        .onboarding-overlay,
+        .share-modal {
             position: relative;
             z-index: 1;
         }
@@ -116,6 +120,19 @@
             -webkit-text-fill-color: var(--text-secondary);
             transition: all 0.6s ease;
         }
+        .page-header .header-action {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+        }
+        .page-header .header-action:active {
+            background: var(--bg-secondary);
+        }
 
         /* ===== 卡片 ===== */
         .mock-card {
@@ -131,6 +148,7 @@
             align-items: center;
             gap: 14px;
             transition: all 0.6s ease;
+            cursor: pointer;
         }
         .mock-card:active {
             transform: scale(0.98);
@@ -147,6 +165,10 @@
             font-size: 22px;
             transition: background 0.6s ease;
         }
+        .mock-card .info {
+            flex: 1;
+            min-width: 0;
+        }
         .mock-card .info .title {
             font-size: 15px;
             font-weight: 600;
@@ -158,6 +180,12 @@
             color: var(--text-secondary);
             margin-top: 2px;
             transition: color 0.3s ease;
+        }
+        .mock-card .info .meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+            margin-top: 2px;
         }
         .mock-card .badge {
             background: var(--bg-secondary);
@@ -179,6 +207,62 @@
             transition: color 0.6s ease;
         }
 
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px 40px;
+            animation: fadeSlide 0.4s ease;
+        }
+        .empty-state .icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+        .empty-state .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .empty-state .sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .empty-state .btn-primary {
+            padding: 12px 32px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(145deg, var(--accent-1), var(--accent-2));
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 24px rgba(200, 154, 120, 0.2);
+        }
+        .empty-state .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .empty-state .progress-track {
+            width: 60%;
+            max-width: 200px;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin: 12px auto 0;
+            overflow: hidden;
+        }
+        .empty-state .progress-track .bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            border-radius: 6px;
+            transition: width 0.6s ease;
+        }
+
         /* ===== 今日宜喝 ===== */
         .fortune-summary {
             background: var(--bg-card);
@@ -194,8 +278,14 @@
             transition: all 0.6s ease;
             cursor: pointer;
         }
+        .fortune-summary:active {
+            transform: scale(0.98);
+        }
         .fortune-summary .icon {
             font-size: 32px;
+        }
+        .fortune-summary .info {
+            flex: 1;
         }
         .fortune-summary .info .label {
             font-size: 12px;
@@ -209,7 +299,6 @@
             transition: color 0.3s ease;
         }
         .fortune-summary .match-badge {
-            margin-left: auto;
             background: rgba(200, 154, 120, 0.12);
             padding: 4px 14px;
             border-radius: 20px;
@@ -217,100 +306,15 @@
             font-size: 13px;
             border: 1px solid var(--card-border-light);
             transition: all 0.6s ease;
+            flex-shrink: 0;
+        }
+        .fortune-summary .match-badge.setup {
+            color: var(--warning);
+            border-color: var(--warning);
+            background: rgba(240, 160, 48, 0.1);
         }
 
-        /* ===== 附近推荐（在命理弹窗内） ===== */
-        .nearby-shop-list {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--card-border);
-        }
-        .nearby-shop-list .nearby-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .nearby-shop-list .nearby-title small {
-            font-weight: 400;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        .nearby-shop-item {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-        .nearby-shop-item:active {
-            transform: scale(0.98);
-        }
-        .nearby-shop-item .shop-icon {
-            font-size: 24px;
-            flex-shrink: 0;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: var(--bg-card);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .nearby-shop-item .shop-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .nearby-shop-item .shop-info .shop-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .nearby-shop-item .shop-info .shop-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 1px;
-        }
-        .nearby-shop-item .shop-info .shop-tags {
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
-            flex-wrap: wrap;
-        }
-        .nearby-shop-item .shop-info .shop-tags span {
-            font-size: 10px;
-            padding: 1px 10px;
-            border-radius: 10px;
-            background: rgba(200, 154, 120, 0.08);
-            border: 1px solid var(--card-border);
-            color: var(--text-secondary);
-        }
-        .nearby-shop-item .shop-info .shop-tags .highlight-tag {
-            border-color: var(--accent-1);
-            color: var(--accent-1);
-        }
-        .nearby-shop-item .shop-distance {
-            font-size: 12px;
-            color: var(--text-secondary);
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-        .nearby-empty {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 13px;
-            padding: 16px 0;
-            opacity: 0.6;
-        }
-
-        /* ===== 附近推荐（报告页内嵌） ===== */
+        /* ===== 附近推荐 ===== */
         .shop-card {
             background: var(--bg-card);
             backdrop-filter: blur(4px);
@@ -335,8 +339,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
             transition: background 0.6s ease;
+        }
+        .shop-card .info {
+            flex: 1;
+            min-width: 0;
         }
         .shop-card .info .name {
             font-size: 15px;
@@ -381,6 +389,13 @@
             line-height: 1.5;
             transition: all 0.6s ease;
         }
+        .shop-card .right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
         .shop-card .right .score {
             font-size: 16px;
             font-weight: 700;
@@ -409,6 +424,20 @@
             margin: 16px 0 12px;
             letter-spacing: 0.5px;
             transition: color 0.6s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title .action-link {
+            font-size: 12px;
+            color: var(--accent-1);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+        .section-title .action-link:active {
+            opacity: 0.6;
         }
         .refresh-btn {
             width: 100%;
@@ -498,6 +527,17 @@
         }
         .nav-item.active .dot {
             opacity: 1;
+        }
+        .nav-item .badge-dot {
+            position: absolute;
+            top: 6px;
+            right: 50%;
+            transform: translateX(18px);
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
         }
 
         .nav-item.fab {
@@ -594,11 +634,29 @@
             margin: 0 auto 18px;
             transition: background 0.6s ease;
         }
+        .record-sheet .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .record-sheet h2 {
             font-size: 22px;
             font-weight: 600;
             color: var(--text-primary);
             transition: color 0.3s ease;
+        }
+        .record-sheet .help-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .record-sheet .help-btn:active {
+            background: var(--bg-secondary);
         }
         .record-sheet .sub {
             font-size: 14px;
@@ -667,6 +725,7 @@
             white-space: nowrap;
             flex-shrink: 0;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         .tag-scroll .tag:active {
             transform: scale(0.94);
@@ -711,7 +770,7 @@
             transform: scale(0.96);
         }
         .record-actions .btn-done.success {
-            background: #4CAF50;
+            background: var(--success);
             box-shadow: 0 6px 24px rgba(76, 175, 80, 0.3);
         }
 
@@ -929,6 +988,99 @@
             content: '🧘 ';
             font-style: normal;
         }
+
+        /* ===== 附近同款推荐（弹窗内） ===== */
+        .nearby-shop-list {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--card-border);
+        }
+        .nearby-shop-list .nearby-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nearby-shop-list .nearby-title small {
+            font-weight: 400;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .nearby-shop-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nearby-shop-item:active {
+            transform: scale(0.98);
+        }
+        .nearby-shop-item .shop-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nearby-shop-item .shop-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .nearby-shop-item .shop-info .shop-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .nearby-shop-item .shop-info .shop-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 1px;
+        }
+        .nearby-shop-item .shop-info .shop-tags {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .nearby-shop-item .shop-info .shop-tags span {
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 10px;
+            background: rgba(200, 154, 120, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+        .nearby-shop-item .shop-info .shop-tags .highlight-tag {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+        }
+        .nearby-shop-item .shop-distance {
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .nearby-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 16px 0;
+            opacity: 0.6;
+        }
+
         .fortune-modal .card .close-btn {
             width: 100%;
             margin-top: 16px;
@@ -947,19 +1099,487 @@
             transform: scale(0.96);
         }
 
-        /* 弹窗内滚动条美化 */
-        .fortune-modal .card .nearby-shop-list {
-            max-height: 260px;
-            overflow-y: auto;
-            margin-right: -4px;
-            padding-right: 4px;
+        /* ===== 新手引导遮罩 ===== */
+        .onboarding-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 6, 4, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 32px 24px;
+            animation: fadeIn 0.4s ease;
         }
-        .fortune-modal .card .nearby-shop-list::-webkit-scrollbar {
-            width: 3px;
+        .onboarding-overlay.open {
+            display: flex;
         }
-        .fortune-modal .card .nearby-shop-list::-webkit-scrollbar-thumb {
+        .onboarding-overlay .onboarding-card {
+            max-width: 380px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 36px 28px 28px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .onboarding-overlay .onboarding-card .step-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .onboarding-overlay .onboarding-card .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .onboarding-overlay .onboarding-card .step-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .onboarding-overlay .onboarding-card .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .onboarding-overlay .onboarding-card .step-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
             background: var(--card-border);
-            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .onboarding-overlay .onboarding-card .step-dots .dot.active {
+            background: var(--accent-1);
+            width: 24px;
+            border-radius: 4px;
+        }
+        .onboarding-overlay .onboarding-card .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        .onboarding-overlay .onboarding-card .btn-group .btn-primary {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(145deg, var(--accent-1), var(--accent-2));
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .onboarding-overlay .onboarding-card .btn-group .btn-primary:active {
+            transform: scale(0.96);
+        }
+        .onboarding-overlay .onboarding-card .btn-group .btn-skip {
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .onboarding-overlay .onboarding-card .btn-group .btn-skip:active {
+            background: var(--bg-secondary);
+        }
+
+        /* ===== 分享弹窗 ===== */
+        .share-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 6, 4, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 400;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+        .share-modal.open {
+            display: flex;
+        }
+        .share-modal .share-card {
+            max-width: 380px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 28px 24px 24px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+        .share-modal .share-card .preview {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--card-border);
+        }
+        .share-modal .share-card .preview .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .share-modal .share-card .preview .title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .share-modal .share-card .preview .sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .share-modal .share-card .preview .flavor-tags {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .share-modal .share-card .preview .flavor-tags span {
+            font-size: 11px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+        .share-modal .share-card .share-channels {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .share-modal .share-card .share-channels button {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .share-modal .share-card .share-channels button:active {
+            transform: scale(0.95);
+            background: var(--bg-card);
+        }
+        .share-modal .share-card .share-channels button .emoji {
+            font-size: 18px;
+        }
+        .share-modal .share-card .close-share {
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 30px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            width: 100%;
+        }
+        .share-modal .share-card .close-share:active {
+            opacity: 0.6;
+        }
+
+        /* ===== 反馈弹窗 ===== */
+        .feedback-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 6, 4, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 450;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+        .feedback-modal.open {
+            display: flex;
+        }
+        .feedback-modal .feedback-card {
+            max-width: 400px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 28px 24px 24px;
+            border: 1px solid var(--card-border);
+        }
+        .feedback-modal .feedback-card .fb-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .feedback-modal .feedback-card .fb-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .feedback-modal .feedback-card .fb-type {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            justify-content: center;
+        }
+        .feedback-modal .feedback-card .fb-type button {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .feedback-modal .feedback-card .fb-type button:active {
+            transform: scale(0.94);
+        }
+        .feedback-modal .feedback-card .fb-type button.active {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+            background: rgba(200, 154, 120, 0.06);
+        }
+        .feedback-modal .feedback-card textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            border-radius: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        .feedback-modal .feedback-card textarea:focus {
+            outline: none;
+            border-color: var(--accent-1);
+        }
+        .feedback-modal .feedback-card textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+        .feedback-modal .feedback-card .fb-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .feedback-modal .feedback-card .fb-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .feedback-modal .feedback-card .fb-actions .fb-cancel {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+        }
+        .feedback-modal .feedback-card .fb-actions .fb-cancel:active {
+            transform: scale(0.96);
+        }
+        .feedback-modal .feedback-card .fb-actions .fb-submit {
+            background: linear-gradient(145deg, var(--accent-1), var(--accent-2));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(200, 154, 120, 0.2);
+        }
+        .feedback-modal .feedback-card .fb-actions .fb-submit:active {
+            transform: scale(0.96);
+        }
+        .feedback-modal .feedback-card .fb-success {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .feedback-modal .feedback-card .fb-success .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .feedback-modal .feedback-card .fb-success .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .feedback-modal .feedback-card .fb-success .sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ===== Toast 通知 ===== */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            font-size: 14px;
+            z-index: 600;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            pointer-events: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        /* ===== 设置页简化 ===== */
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 8px;
+            transition: all 0.6s ease;
+            cursor: pointer;
+        }
+        .settings-item:active {
+            transform: scale(0.98);
+        }
+        .settings-item .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .settings-item .left .icon {
+            font-size: 20px;
+        }
+        .settings-item .left .label {
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        .settings-item .right {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .settings-item .right .arrow {
+            opacity: 0.3;
+        }
+        .settings-divider {
+            height: 1px;
+            background: var(--card-border);
+            margin: 12px 0;
+        }
+        .settings-version {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            opacity: 0.3;
+            padding: 16px 0 8px;
+        }
+
+        /* ===== 推送授权提示 ===== */
+        .push-prompt {
+            background: var(--bg-card);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 16px;
+            padding: 16px 18px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.6s ease;
+        }
+        .push-prompt.visible {
+            display: flex;
+        }
+        .push-prompt .icon {
+            font-size: 28px;
+        }
+        .push-prompt .info {
+            flex: 1;
+        }
+        .push-prompt .info .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .push-prompt .info .desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .push-prompt .btn-enable {
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(145deg, var(--accent-1), var(--accent-2));
+            color: #fff;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .push-prompt .btn-enable:active {
+            transform: scale(0.94);
+        }
+        .push-prompt .btn-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .push-prompt .btn-dismiss:active {
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -967,6 +1587,9 @@
 
     <!-- ===== 氛围光晕 ===== -->
     <div class="ambient-glow" id="ambientGlow"></div>
+
+    <!-- ===== Toast 通知 ===== -->
+    <div class="toast" id="toast"></div>
 
     <!-- ========================================================= -->
     <!-- 主内容 -->
@@ -980,191 +1603,64 @@
                 <span class="date" id="todayDate">6月21日</span>
             </div>
 
-            <!-- ★ 修改点1: "查看命理" → "查看解读" -->
+            <!-- 推送授权提示 -->
+            <div class="push-prompt" id="pushPrompt">
+                <span class="icon">🔔</span>
+                <div class="info">
+                    <div class="title">开启每日宜喝提醒</div>
+                    <div class="desc">每天早晨 8:00 推送今日专属咖啡指引</div>
+                </div>
+                <button class="btn-enable" id="enablePush">开启</button>
+                <button class="btn-dismiss" id="dismissPush">✕</button>
+            </div>
+
+            <!-- 今日宜喝 -->
             <div class="fortune-summary" id="fortuneSummary">
                 <span class="icon">🔮</span>
                 <div class="info">
                     <div class="label">今日宜喝</div>
-                    <div class="value" id="summaryBean">埃塞俄比亚·花魁</div>
+                    <div class="value" id="summaryBean">设置生辰，获取专属指引</div>
                 </div>
-                <span class="match-badge">✨ 查看解读</span>
+                <span class="match-badge setup" id="summaryBadge">⚙️ 设置</span>
             </div>
 
-            <div class="mock-card">
-                <div class="avatar">🌺</div>
-                <div class="info">
-                    <div class="title">埃塞·花魁 日晒</div>
-                    <div class="desc">明亮果酸 · 花香 · 茶感</div>
-                </div>
-                <span class="badge">5.0 ⭐</span>
+            <!-- 记录列表 -->
+            <div id="homeContent">
+                <!-- 由JS动态渲染 -->
             </div>
-            <div class="mock-card">
-                <div class="avatar">🍫</div>
-                <div class="info">
-                    <div class="title">哥伦比亚·蕙兰</div>
-                    <div class="desc">黑巧 · 坚果 · 醇厚</div>
-                </div>
-                <span class="badge">4.5 ⭐</span>
-            </div>
-            <div class="mock-card">
-                <div class="avatar">🍇</div>
-                <div class="info">
-                    <div class="title">肯尼亚·AA 水洗</div>
-                    <div class="desc">莓果 · 红酒韵 · 明亮</div>
-                </div>
-                <span class="badge">4.8 ⭐</span>
-            </div>
-            <div class="bottom-hint">— 已经到底了 —</div>
         </div>
 
         <!-- ===== 面板：人格 ===== -->
         <div class="panel" id="panel-personality">
             <div class="page-header">
                 <h1>🧠 咖啡人格</h1>
-                <span class="date">进化中</span>
+                <span class="date" id="personalityDate">进化中</span>
             </div>
-            <div style="text-align:center; padding:20px 0 30px;">
-                <span style="font-size:72px; display:block; margin-bottom:12px;">🌱</span>
-                <div style="font-size:20px; font-weight:600; color:var(--text-primary); transition:color 0.3s ease;">风味探险家 · 萌芽期</div>
-                <div style="font-size:14px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">记录满 10 杯解锁完整人格报告</div>
-                <div style="width:80%; max-width:280px; height:6px; background:var(--bg-secondary); border-radius:6px; margin:16px auto 0; overflow:hidden; transition:background 0.6s ease;">
-                    <div style="width:50%; height:100%; background:linear-gradient(90deg, var(--accent-1), var(--accent-2)); border-radius:6px; transition:all 0.6s ease;"></div>
-                </div>
-                <div style="margin-top:8px; font-size:13px; color:var(--text-secondary); transition:color 0.3s ease;">进度 5 / 10 杯</div>
+            <div id="personalityContent">
+                <!-- 由JS动态渲染 -->
             </div>
-            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">已解锁标签</span>
-                    <span style="color:var(--accent-1); font-size:13px;">+3 杯解锁新标签</span>
-                </div>
-                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary); transition:all 0.3s ease;">🌸 花香</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary); transition:all 0.3s ease;">🍊 果酸</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary); transition:all 0.3s ease;">⬜ 待解锁</span>
-                    <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary); transition:all 0.3s ease;">⬜ 待解锁</span>
-                </div>
-            </div>
-            <div class="bottom-hint">— 持续记录，解锁更多 —</div>
         </div>
 
         <!-- ===== 面板：同好 ===== -->
         <div class="panel" id="panel-social">
             <div class="page-header">
                 <h1>🌊 同好漂流瓶</h1>
-                <span class="date">今日匹配</span>
+                <span class="date" id="socialDate">今日匹配</span>
             </div>
-            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:14px 16px; border:1px solid var(--card-border); margin-bottom:16px; display:flex; align-items:center; gap:12px; transition:all 0.6s ease;">
-                <span style="font-size:28px;">🧩</span>
-                <div>
-                    <div style="font-size:14px; color:var(--text-primary); font-weight:500; transition:color 0.3s ease;">基于风味相似度匹配</div>
-                    <div style="font-size:12px; color:var(--text-secondary); transition:color 0.3s ease;">找到 3 位口味相近的咖友</div>
-                </div>
+            <div id="socialContent">
+                <!-- 由JS动态渲染 -->
             </div>
-            <div class="mock-card">
-                <div class="avatar">🌸</div>
-                <div class="info">
-                    <div class="title">@咖啡探险家</div>
-                    <div class="desc">🏆 共同偏好：花香 · 果酸</div>
-                </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">92% 匹配</span>
-            </div>
-            <div class="mock-card">
-                <div class="avatar">🌿</div>
-                <div class="info">
-                    <div class="title">@风味猎人</div>
-                    <div class="desc">🏆 共同偏好：发酵感 · 醇厚</div>
-                </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">87% 匹配</span>
-            </div>
-            <div class="mock-card">
-                <div class="avatar">🍃</div>
-                <div class="info">
-                    <div class="title">@手冲星人</div>
-                    <div class="desc">🏆 共同偏好：茶感 · 干净</div>
-                </div>
-                <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0; transition:all 0.6s ease;">81% 匹配</span>
-            </div>
-            <div style="text-align:center; padding:12px 0 4px;">
-                <span style="background:var(--bg-secondary); padding:10px 28px; border-radius:30px; color:var(--accent-1); font-size:14px; border:1px solid var(--card-border); display:inline-block; transition:all 0.6s ease;">📨 发送「隔空共饮」邀请</span>
-            </div>
-            <div class="bottom-hint">— 基于 8 维风味向量匹配 —</div>
         </div>
 
         <!-- ===== 面板：报告 ===== -->
         <div class="panel" id="panel-report">
             <div class="page-header">
                 <h1>📊 风味报告</h1>
-                <span class="date">6 月趋势</span>
+                <span class="date" id="reportDate">6 月趋势</span>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px;">
-                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">12</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">本月杯数</div>
-                </div>
-                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">6</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">探索产地</div>
-                </div>
-                <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border); transition:all 0.6s ease;">
-                    <div style="font-size:22px; font-weight:700; color:var(--text-primary); transition:color 0.3s ease;">4.7</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; transition:color 0.3s ease;">平均评分</div>
-                </div>
+            <div id="reportContent">
+                <!-- 由JS动态渲染 -->
             </div>
-            <div style="background:var(--bg-card); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border-radius:14px; padding:16px 18px; border:1px solid var(--card-border); margin-bottom:12px; transition:all 0.6s ease;">
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
-                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">🌍 最爱产区</span>
-                    <span style="color:var(--text-primary); font-size:14px; font-weight:500; transition:color 0.3s ease;">埃塞俄比亚</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
-                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">🏷️ 风味标签</span>
-                    <span style="color:var(--text-primary); font-size:14px; font-weight:500; transition:color 0.3s ease;">花香 · 果酸 · 茶感</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                    <span style="color:var(--text-secondary); font-size:14px; transition:color 0.3s ease;">📈 本月趋势</span>
-                    <span style="color:#4CAF50; font-size:14px; font-weight:500;">↑ 偏好向浅烘偏移</span>
-                </div>
-            </div>
-
-            <div class="section-title">📍 附近 · 风味匹配</div>
-            <div class="shop-card">
-                <div class="thumb">☕</div>
-                <div class="info">
-                    <div class="name">叁舍咖啡 · 手冲专门店</div>
-                    <div class="address">📍 天河路 228 号 · 步行 320m</div>
-                    <div class="tags">
-                        <span class="highlight">🏷️ 推荐：花魁</span>
-                        <span>浅烘</span>
-                        <span>手冲</span>
-                        <span>⭐ 4.7</span>
-                    </div>
-                    <div class="reason">💡 大众点评：“花魁手冲花香炸裂，与你今日命理高度匹配。”</div>
-                </div>
-                <div class="right">
-                    <div class="score">4.7 <small>/5</small></div>
-                    <span class="match-pct">🔥 94%</span>
-                </div>
-            </div>
-            <div class="shop-card">
-                <div class="thumb">🌸</div>
-                <div class="info">
-                    <div class="name">瑰夏·花园咖啡</div>
-                    <div class="address">📍 花城大道 89 号 · 步行 480m</div>
-                    <div class="tags">
-                        <span class="highlight">🏷️ 推荐：瑰夏</span>
-                        <span>中浅烘</span>
-                        <span>SOE</span>
-                        <span>⭐ 4.5</span>
-                    </div>
-                    <div class="reason">💡 小红书：“冰冲瑰夏柑橘蜂蜜味绝了。”</div>
-                </div>
-                <div class="right">
-                    <div class="score">4.5 <small>/5</small></div>
-                    <span class="match-pct">✨ 87%</span>
-                </div>
-            </div>
-            <button class="refresh-btn" id="refreshBtn">🔄 刷新附近推荐</button>
-            <div style="text-align:center; color:var(--text-secondary); opacity:0.3; font-size:11px; padding:12px 0 4px; transition:color 0.6s ease;">— 数据基于大众点评 · 小红书 AI 汇总 —</div>
-            <div class="bottom-hint">— 数据每日更新 —</div>
         </div>
     </div>
 
@@ -1204,7 +1700,10 @@
     <div class="record-overlay" id="recordOverlay">
         <div class="record-sheet">
             <div class="handle"></div>
-            <h2>☕ 冲煮手记</h2>
+            <div class="header-row">
+                <h2>☕ 冲煮手记</h2>
+                <button class="help-btn" id="helpBtn">❓</button>
+            </div>
             <div class="sub">单指滑动轮盘 · 找到你的风味</div>
             <div class="wheel-container">
                 <canvas id="wheelCanvas" width="400" height="400"></canvas>
@@ -1274,18 +1773,91 @@
                 <div class="row"><span class="label">饮用温度</span><span class="value" id="fTemp">—</span></div>
                 <div class="mindful" id="fMindful">今日宜·向上生长，让花香唤醒你内在的创造力。每一口都是与自己的对话。</div>
 
-                <!-- ★ 修改点2: 附近同款推荐 -->
                 <div class="nearby-shop-list" id="nearbyShopList">
                     <div class="nearby-title">
                         📍 附近同款推荐
                         <small>· 根据今日宜喝匹配</small>
                     </div>
-                    <div id="nearbyShopsContainer">
-                        <!-- 由JS动态渲染 -->
-                    </div>
+                    <div id="nearbyShopsContainer"></div>
                 </div>
+
+                <!-- 分享按钮 -->
+                <button class="btn-generate" id="shareFortuneBtn" style="margin-top:12px; width:100%;">📤 分享今日宜喝</button>
             </div>
             <button class="close-btn" id="closeFortune">✕ 关闭</button>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 新手引导 -->
+    <!-- ========================================================= -->
+    <div class="onboarding-overlay" id="onboardingOverlay">
+        <div class="onboarding-card">
+            <span class="step-icon" id="obIcon">☕</span>
+            <div class="step-title" id="obTitle">欢迎来到咖啡手记</div>
+            <div class="step-desc" id="obDesc">记录每一杯咖啡，发现你的风味人格</div>
+            <div class="step-dots" id="obDots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-skip" id="obSkip">跳过</button>
+                <button class="btn-primary" id="obNext">下一步 →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 分享弹窗 -->
+    <!-- ========================================================= -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-card">
+            <div class="preview" id="sharePreview">
+                <span class="icon">☕</span>
+                <div class="title" id="shareTitle">埃塞俄比亚·花魁</div>
+                <div class="sub" id="shareSub">明亮果酸 · 花香 · 茶感</div>
+                <div class="flavor-tags" id="shareTags">
+                    <span>🔥 今日宜喝</span>
+                    <span>✨ 命理推荐</span>
+                </div>
+            </div>
+            <div class="share-channels">
+                <button onclick="showToast('📱 已复制分享链接')"><span class="emoji">📋</span> 复制链接</button>
+                <button onclick="showToast('📸 已保存到相册')"><span class="emoji">📸</span> 保存图片</button>
+                <button onclick="showToast('💬 已分享到微信')"><span class="emoji">💬</span> 微信</button>
+            </div>
+            <button class="close-share" id="closeShare">✕ 关闭</button>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 反馈弹窗 -->
+    <!-- ========================================================= -->
+    <div class="feedback-modal" id="feedbackModal">
+        <div class="feedback-card">
+            <div id="fbForm">
+                <div class="fb-title">💬 意见反馈</div>
+                <div class="fb-sub">你的每一份反馈都在让咖啡手记变得更好</div>
+                <div class="fb-type" id="fbTypeGroup">
+                    <button data-type="bug">🐛 Bug反馈</button>
+                    <button data-type="idea">💡 功能建议</button>
+                    <button data-type="content">📝 内容纠错</button>
+                    <button data-type="other">❤️ 其他</button>
+                </div>
+                <textarea id="fbContent" placeholder="请详细描述你的问题或建议...（至少10个字）"></textarea>
+                <div class="fb-actions">
+                    <button class="fb-cancel" id="fbCancel">取消</button>
+                    <button class="fb-submit" id="fbSubmit">提交反馈</button>
+                </div>
+            </div>
+            <div class="fb-success" id="fbSuccess">
+                <span class="icon">🎉</span>
+                <div class="title">收到你的反馈！</div>
+                <div class="sub">我们会认真查看，感谢你的支持 💪</div>
+                <button class="btn-generate" style="margin-top:16px; width:100%;" id="fbDone">好的</button>
+            </div>
         </div>
     </div>
 
@@ -1310,8 +1882,123 @@
                 return '#' + [c(r), c(g), c(b)].map(v => v.toString(16).padStart(2, '0')).join('');
             }
 
+            function showToast(msg) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                clearTimeout(t._timer);
+                t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+            }
+
             // =========================================================
-            // 一、动态色彩系统
+            // 一、咖啡豆数据库（50+款）
+            // =========================================================
+            const COFFEE_BEANS = [
+                // 埃塞俄比亚
+                { id: 1, name: '花魁', full: '埃塞俄比亚·花魁 G1 日晒', origin: '埃塞俄比亚', region: '古吉·罕贝拉', process: '日晒',
+                    roast: '浅烘', vector: [8, 6, 2, 4, 8, 9, 3, 3], desc: '明亮果酸 · 花香 · 茶感' },
+                { id: 2, name: '瑰夏', full: '巴拿马·瑰夏 水洗', origin: '巴拿马', region: '波奎特', process: '水洗', roast: '浅烘',
+                    vector: [9, 7, 2, 3, 8, 9, 2, 2], desc: '茉莉花香 · 柑橘 · 蜂蜜' },
+                { id: 3, name: '耶加雪菲', full: '埃塞俄比亚·耶加雪菲 G2 水洗', origin: '埃塞俄比亚', region: '耶加雪菲', process: '水洗',
+                    roast: '浅烘', vector: [7, 6, 2, 4, 7, 7, 3, 3], desc: '柑橘 · 茉莉 · 茶感' },
+                { id: 4, name: '西达摩', full: '埃塞俄比亚·西达摩 G1 日晒', origin: '埃塞俄比亚', region: '西达摩', process: '日晒',
+                    roast: '中浅烘', vector: [6, 7, 3, 5, 7, 6, 4, 4], desc: '莓果 · 巧克力 · 香料' },
+                // 肯尼亚
+                { id: 5, name: '肯尼亚 AA', full: '肯尼亚·AA 水洗', origin: '肯尼亚', region: '涅里', process: '水洗', roast: '中烘',
+                    vector: [8, 5, 3, 5, 8, 4, 3, 5], desc: '莓果 · 红酒韵 · 明亮' },
+                { id: 6, name: '肯尼亚 SL28', full: '肯尼亚·SL28 水洗', origin: '肯尼亚', region: '基安布', process: '水洗',
+                    roast: '中浅烘', vector: [7, 6, 3, 5, 7, 5, 3, 4], desc: '黑醋栗 · 乌梅 · 甜感' },
+                { id: 7, name: '肯尼亚 SL34', full: '肯尼亚·SL34 水洗', origin: '肯尼亚', region: '穆兰加', process: '水洗',
+                    roast: '中烘', vector: [7, 5, 4, 6, 6, 4, 4, 4], desc: '番茄 · 莓果 · 酸质明亮' },
+                // 哥伦比亚
+                { id: 8, name: '蕙兰', full: '哥伦比亚·蕙兰 水洗', origin: '哥伦比亚', region: '蕙兰', process: '水洗', roast: '中浅烘',
+                    vector: [6, 7, 4, 6, 5, 4, 7, 3], desc: '黑巧 · 坚果 · 醇厚' },
+                { id: 9, name: '娜玲珑', full: '哥伦比亚·娜玲珑 水洗', origin: '哥伦比亚', region: '娜玲珑', process: '水洗',
+                    roast: '中烘', vector: [5, 7, 5, 7, 4, 3, 7, 3], desc: '巧克力 · 焦糖 · 均衡' },
+                { id: 10, name: '考卡', full: '哥伦比亚·考卡 水洗', origin: '哥伦比亚', region: '考卡', process: '水洗', roast: '中烘',
+                    vector: [6, 6, 4, 6, 5, 4, 6, 3], desc: '坚果 · 巧克力 · 柔和' },
+                // 巴西
+                { id: 11, name: '黄波旁', full: '巴西·黄波旁 日晒', origin: '巴西', region: '米纳斯吉拉斯', process: '日晒',
+                    roast: '中深烘', vector: [4, 7, 6, 7, 3, 2, 8, 3], desc: '坚果 · 可可 · 醇厚扎实' },
+                { id: 12, name: '红波旁', full: '巴西·红波旁 日晒', origin: '巴西', region: '圣保罗', process: '日晒', roast: '中烘',
+                    vector: [4, 7, 5, 7, 3, 2, 7, 3], desc: '巧克力 · 坚果 · 均衡' },
+                { id: 13, name: '卡杜艾', full: '巴西·卡杜艾 日晒', origin: '巴西', region: '巴拉那', process: '日晒', roast: '中烘',
+                    vector: [5, 6, 5, 6, 4, 3, 7, 3], desc: '坚果 · 巧克力 · 柔和' },
+                // 印尼
+                { id: 14, name: '曼特宁', full: '印尼·曼特宁 湿刨', origin: '印尼', region: '苏门答腊', process: '湿刨',
+                    roast: '深烘', vector: [3, 7, 8, 9, 2, 1, 9, 4], desc: '草本 · 醇厚 · 低酸' },
+                { id: 15, name: '爪哇', full: '印尼·爪哇 水洗', origin: '印尼', region: '爪哇', process: '水洗', roast: '中深烘',
+                    vector: [4, 6, 7, 8, 3, 2, 8, 3], desc: '香料 · 草本 · 醇厚' },
+                { id: 16, name: '苏拉威西', full: '印尼·苏拉威西 水洗', origin: '印尼', region: '苏拉威西', process: '水洗',
+                    roast: '中深烘', vector: [4, 6, 6, 8, 3, 3, 7, 3], desc: '草本 · 巧克力 · 醇厚' },
+                // 危地马拉
+                { id: 17, name: '安提瓜', full: '危地马拉·安提瓜 水洗', origin: '危地马拉', region: '安提瓜', process: '水洗',
+                    roast: '中烘', vector: [6, 7, 5, 7, 4, 3, 7, 3], desc: '蜂蜜 · 甜醇 · 圆润' },
+                { id: 18, name: '薇薇特南果', full: '危地马拉·薇薇特南果 水洗', origin: '危地马拉', region: '薇薇特南果', process: '水洗',
+                    roast: '中浅烘', vector: [7, 6, 4, 5, 5, 5, 5, 3], desc: '果香 · 巧克力 · 甜感' },
+                // 中国云南
+                { id: 19, name: '云南卡蒂姆', full: '中国·云南 卡蒂姆 水洗', origin: '中国', region: '云南·保山', process: '水洗',
+                    roast: '中烘', vector: [5, 6, 5, 6, 4, 3, 6, 3], desc: '坚果 · 巧克力 · 柔和' },
+                { id: 20, name: '云南铁皮卡', full: '中国·云南 铁皮卡 日晒', origin: '中国', region: '云南·普洱', process: '日晒',
+                    roast: '中浅烘', vector: [6, 7, 4, 5, 5, 4, 5, 3], desc: '果香 · 甜感 · 茶韵' },
+                // 哥斯达黎加
+                { id: 21, name: '哥斯达黎加·蜜处理', full: '哥斯达黎加·蜜处理', origin: '哥斯达黎加', region: '塔拉珠', process: '蜜处理',
+                    roast: '中烘', vector: [6, 8, 4, 6, 5, 4, 5, 4], desc: '蜂蜜 · 焦糖 · 圆润' },
+                // 拼配豆
+                { id: 22, name: '经典意式拼配', full: '经典意式拼配 深烘', origin: '多产地拼配', region: '-', process: '拼配',
+                    roast: '深烘', vector: [3, 6, 8, 9, 3, 2, 8, 4], desc: '浓郁 · 巧克力 · 醇厚' },
+                { id: 23, name: '手冲拼配·花韵', full: '手冲拼配·花韵 中浅烘', origin: '多产地拼配', region: '-', process: '拼配',
+                    roast: '中浅烘', vector: [7, 6, 3, 5, 7, 7, 4, 3], desc: '花香 · 果酸 · 层次丰富' },
+                { id: 24, name: '季节限定·秋实', full: '季节限定·秋实 中烘', origin: '多产地拼配', region: '-', process: '拼配',
+                    roast: '中烘', vector: [5, 7, 5, 7, 5, 4, 7, 4], desc: '坚果 · 甜感 · 温暖' },
+                // 更多埃塞
+                { id: 25, name: '古吉·罕贝拉', full: '埃塞俄比亚·古吉·罕贝拉 日晒', origin: '埃塞俄比亚', region: '古吉', process: '日晒',
+                    roast: '浅烘', vector: [8, 6, 2, 4, 8, 8, 3, 4], desc: '草莓 · 花香 · 酒韵' },
+                { id: 26, name: '乌拉嘎', full: '埃塞俄比亚·乌拉嘎 水洗', origin: '埃塞俄比亚', region: '乌拉嘎', process: '水洗',
+                    roast: '浅烘', vector: [8, 5, 2, 4, 7, 8, 3, 3], desc: '柑橘 · 茉莉 · 茶感' },
+                // 更多哥伦比亚
+                { id: 27, name: '哥伦比亚·粉波旁', full: '哥伦比亚·粉波旁 水洗', origin: '哥伦比亚', region: '蕙兰', process: '水洗',
+                    roast: '中浅烘', vector: [7, 7, 3, 5, 6, 5, 5, 3], desc: '水果 · 焦糖 · 甜感' },
+                // 更多肯尼亚
+                { id: 28, name: '肯尼亚·水洗AA', full: '肯尼亚·水洗AA', origin: '肯尼亚', region: '涅里', process: '水洗',
+                    roast: '中烘', vector: [8, 5, 3, 5, 7, 4, 3, 5], desc: '黑莓 · 乌梅 · 明亮' },
+                // 巴拿马
+                { id: 29, name: '巴拿马·瑰夏', full: '巴拿马·瑰夏 日晒', origin: '巴拿马', region: '波奎特', process: '日晒',
+                    roast: '浅烘', vector: [9, 7, 2, 3, 9, 9, 2, 2], desc: '玫瑰 · 柑橘 · 蜂蜜' },
+                // 洪都拉斯
+                { id: 30, name: '洪都拉斯·SHB', full: '洪都拉斯·SHB 水洗', origin: '洪都拉斯', region: '马卡拉', process: '水洗',
+                    roast: '中烘', vector: [5, 6, 5, 6, 5, 4, 6, 3], desc: '巧克力 · 坚果 · 均衡' },
+            ];
+
+            // =========================================================
+            // 二、附近店铺数据
+            // =========================================================
+            const NEARBY_SHOPS = [
+                { id: 1, name: '叁舍咖啡 · 手冲专门店', icon: '☕', address: '天河路 228 号', distance: '320m',
+                    beans: ['花魁', '瑰夏', '肯尼亚 AA'], tags: ['浅烘', '手冲', 'SOE'], rating: 4.7,
+                comment: '花魁手冲花香炸裂，与你今日命理高度匹配' },
+                { id: 2, name: '瑰夏·花园咖啡', icon: '🌸', address: '花城大道 89 号', distance: '480m',
+                    beans: ['瑰夏', '花魁', '哥伦比亚'], tags: ['中浅烘', 'SOE', '冰冲'], rating: 4.5,
+                comment: '冰冲瑰夏柑橘蜂蜜味绝了' },
+                { id: 3, name: '豆仓 · 精品咖啡', icon: '🌰', address: '体育西路 102 号', distance: '650m',
+                    beans: ['曼特宁', '巴西', '哥伦比亚'], tags: ['深烘', '意式', '拼配'], rating: 4.3,
+                comment: '深烘曼特宁奶油坚果香很正' },
+                { id: 4, name: '黑胶咖啡 · 肯尼亚专场', icon: '🍇', address: '黄埔大道 56 号', distance: '820m',
+                    beans: ['肯尼亚 AA', '埃塞', '花魁'], tags: ['中烘', '水洗', '单品'], rating: 4.2,
+                comment: '肯尼亚AA莓果调性突出，酒韵悠长' },
+                { id: 5, name: '微光 · 咖啡实验室', icon: '🔬', address: '珠江新城 花城汇 负一层', distance: '1.1km',
+                    beans: ['瑰夏', '埃塞', '秘鲁'], tags: ['浅烘', '手冲', '创意特调'], rating: 4.6,
+                comment: '埃塞豆子新鲜，草莓香气明显' },
+                { id: 6, name: '雲啡 · 云南精品', icon: '🌿', address: '体育东路 45 号', distance: '950m',
+                    beans: ['云南卡蒂姆', '云南铁皮卡'], tags: ['中烘', '水洗', '日晒'], rating: 4.4,
+                comment: '云南豆子的花果香和茶韵很独特' },
+                { id: 7, name: '果核咖啡 · 烘焙工坊', icon: '🫘', address: '天河城 5 楼', distance: '780m',
+                    beans: ['经典意式拼配', '手冲拼配·花韵'], tags: ['深烘', '中浅烘', '拼配'], rating: 4.5,
+                comment: '意式浓缩油脂丰富，手冲拼配层次感强' },
+            ];
+
+            // =========================================================
+            // 三、动态色彩系统
             // =========================================================
             const COLOR_MAP = {
                 acid: { low: '#f5e3d4', high: '#e8a87c' },
@@ -1458,12 +2145,11 @@
 
                 const glow = document.getElementById('ambientGlow');
                 glow.style.background = `radial-gradient(circle at 40% 30%, ${colors.glow}, transparent 70%)`;
-
                 document.body.style.background = colors.primary;
             }
 
             // =========================================================
-            // 二、风味轮盘
+            // 四、风味轮盘
             // =========================================================
             const canvas = document.getElementById('wheelCanvas');
             const ctx = canvas.getContext('2d');
@@ -1610,18 +2296,19 @@
             updateUI(posX, posY);
 
             // =========================================================
-            // 三、命理系统 + 附近同款推荐
+            // 五、命理系统
             // =========================================================
             const LIFE_MAP = {
-                1: { flavor: '明亮果酸', bean: '埃塞俄比亚·花魁', sub: '明亮果酸 · 花香 · 茶感', element: '火' },
-                2: { flavor: '均衡圆润', bean: '哥伦比亚·蕙兰', sub: '均衡圆润 · 坚果 · 柔和', element: '土' },
-                3: { flavor: '花香轻盈', bean: '瑰夏·绿标', sub: '茉莉花香 · 柑橘 · 蜂蜜', element: '木' },
-                4: { flavor: '坚果可可', bean: '巴西·黄波旁', sub: '坚果 · 可可 · 醇厚扎实', element: '土' },
-                5: { flavor: '发酵酒韵', bean: '肯尼亚·AA', sub: '莓果 · 红酒韵 · 明亮', element: '水' },
-                6: { flavor: '蜂蜜甜醇', bean: '危地马拉·安提瓜', sub: '蜂蜜 · 甜醇 · 圆润', element: '金' },
-                7: { flavor: '茶感清透', bean: '中国·云南', sub: '茶感 · 清透 · 柔和', element: '水' },
-                8: { flavor: '黑巧浓郁', bean: '印尼·曼特宁', sub: '黑巧 · 浓郁 · 低酸', element: '金' },
-                9: { flavor: '复合层次', bean: '拼配豆 · 深藏', sub: '复合层次 · 深邃 · 多变', element: '火' },
+                1: { flavor: '明亮果酸', bean: '花魁', full: '埃塞俄比亚·花魁 G1 日晒', sub: '明亮果酸 · 花香 · 茶感', element: '火' },
+                2: { flavor: '均衡圆润', bean: '蕙兰', full: '哥伦比亚·蕙兰 水洗', sub: '均衡圆润 · 坚果 · 柔和', element: '土' },
+                3: { flavor: '花香轻盈', bean: '瑰夏', full: '巴拿马·瑰夏 水洗', sub: '茉莉花香 · 柑橘 · 蜂蜜', element: '木' },
+                4: { flavor: '坚果可可', bean: '黄波旁', full: '巴西·黄波旁 日晒', sub: '坚果 · 可可 · 醇厚扎实', element: '土' },
+                5: { flavor: '发酵酒韵', bean: '肯尼亚 AA', full: '肯尼亚·AA 水洗', sub: '莓果 · 红酒韵 · 明亮', element: '水' },
+                6: { flavor: '蜂蜜甜醇', bean: '安提瓜', full: '危地马拉·安提瓜 水洗', sub: '蜂蜜 · 甜醇 · 圆润', element: '金' },
+                7: { flavor: '茶感清透', bean: '云南卡蒂姆', full: '中国·云南 卡蒂姆 水洗', sub: '茶感 · 清透 · 柔和', element: '水' },
+                8: { flavor: '黑巧浓郁', bean: '曼特宁', full: '印尼·曼特宁 湿刨', sub: '黑巧 · 浓郁 · 低酸', element: '金' },
+                9: { flavor: '复合层次', bean: '手冲拼配·花韵', full: '手冲拼配·花韵 中浅烘', sub: '复合层次 · 深邃 · 多变',
+                    element: '火' },
             };
             const ROAST_MAP = {
                 '木': { roast: '浅烘', temp: '温热 60-65°C', word: '向上生长 · 拥抱可能' },
@@ -1633,58 +2320,8 @@
             const ELEM_NAMES = { '木': '木·生长', '火': '火·热情', '土': '土·稳定', '金': '金·锐意', '水': '水·沉静' };
             const LIFE_NAMES = ['独立·创新', '平衡·和谐', '创意·表达', '稳定·踏实', '冒险·自由', '关爱·责任', '深思·内省', '力量·成就', '智慧·包容'];
 
-            // ★ 附近咖啡店数据库（模拟）
-            const NEARBY_SHOPS = [{
-                id: 1,
-                name: '叁舍咖啡 · 手冲专门店',
-                icon: '☕',
-                address: '天河路 228 号',
-                distance: '320m',
-                beans: ['花魁', '瑰夏', '肯尼亚'],
-                tags: ['浅烘', '手冲', 'SOE'],
-                rating: 4.7,
-                comment: '花魁手冲花香炸裂'
-            }, {
-                id: 2,
-                name: '瑰夏·花园咖啡',
-                icon: '🌸',
-                address: '花城大道 89 号',
-                distance: '480m',
-                beans: ['瑰夏', '花魁', '哥伦比亚'],
-                tags: ['中浅烘', 'SOE', '冰冲'],
-                rating: 4.5,
-                comment: '冰冲瑰夏柑橘蜂蜜味绝了'
-            }, {
-                id: 3,
-                name: '豆仓 · 精品咖啡',
-                icon: '🌰',
-                address: '体育西路 102 号',
-                distance: '650m',
-                beans: ['曼特宁', '巴西', '哥伦比亚'],
-                tags: ['深烘', '意式', '拼配'],
-                rating: 4.3,
-                comment: '深烘曼特宁奶油坚果香很正'
-            }, {
-                id: 4,
-                name: '黑胶咖啡 · 肯尼亚专场',
-                icon: '🍇',
-                address: '黄埔大道 56 号',
-                distance: '820m',
-                beans: ['肯尼亚', '埃塞', '花魁'],
-                tags: ['中烘', '水洗', '单品'],
-                rating: 4.2,
-                comment: '肯尼亚AA莓果调性突出，酒韵悠长'
-            }, {
-                id: 5,
-                name: '微光 · 咖啡实验室',
-                icon: '🔬',
-                address: '珠江新城 花城汇 负一层',
-                distance: '1.1km',
-                beans: ['瑰夏', '埃塞', '秘鲁'],
-                tags: ['浅烘', '手冲', '创意特调'],
-                rating: 4.6,
-                comment: '埃塞豆子新鲜，草莓香气明显'
-            }, ];
+            let currentFortuneBean = null;
+            let userBirthSet = false;
 
             function getLifeNumber(y, m, d) {
                 let s = y + m + d;
@@ -1712,45 +2349,31 @@
                 return (prefixes[num] || '让这杯咖啡陪你度过今日。') + ' ' + (ROAST_MAP[elem]?.word || '静心品味') + '。每一口都是与自己的对话。';
             }
 
-            // ★ 根据今日推荐豆种筛选附近店铺
             function getNearbyShopsByBean(targetBean) {
-                if (!targetBean) return NEARBY_SHOPS.slice(0, 3);
-
-                // 提取豆种关键词（如"花魁"、"瑰夏"）
+                if (!targetBean) return NEARBY_SHOPS.slice(0, 4);
                 const keywords = targetBean.replace(/·/g, ' ').split(/\s+/);
                 const mainKeyword = keywords[0] || targetBean;
-
-                // 按匹配度排序
                 const scored = NEARBY_SHOPS.map(shop => {
                     let score = 0;
                     shop.beans.forEach(bean => {
-                        if (bean.includes(mainKeyword) || mainKeyword.includes(bean)) {
-                            score += 3;
-                        }
-                        // 模糊匹配
+                        if (bean.includes(mainKeyword) || mainKeyword.includes(bean)) score += 3;
                         if (bean.includes(targetBean.substring(0, 2)) || targetBean.includes(bean.substring(0,
-                                2))) {
-                            score += 1;
-                        }
+                            2))) score += 1;
                     });
-                    // 评分加权
                     score += (shop.rating - 4) * 1.5;
                     return { ...shop, matchScore: score };
                 });
-
-                // 按匹配度降序排序，取前5
                 scored.sort((a, b) => b.matchScore - a.matchScore);
                 return scored.slice(0, 5);
             }
 
-            // ★ 渲染附近店铺列表
             function renderNearbyShops(shops) {
                 const container = document.getElementById('nearbyShopsContainer');
                 if (!shops || shops.length === 0) {
-                    container.innerHTML = `<div class="nearby-empty">📍 附近暂未找到同款咖啡店<br><small>试试手动搜索</small></div>`;
+                    container.innerHTML =
+                        `<div class="nearby-empty">📍 附近暂未找到同款咖啡店<br><small>试试手动搜索</small></div>`;
                     return;
                 }
-
                 let html = '';
                 shops.forEach(shop => {
                     const beanTags = shop.beans.map(b =>
@@ -1774,53 +2397,311 @@
                 container.innerHTML = html;
             }
 
-            // ---- 填充下拉 ----
-            const ySel = document.getElementById('birthYear'),
-                dSel = document.getElementById('birthDay');
-            for (let y = 2026; y >= 1900; y--) { const o = document.createElement('option');
-                o.value = y;
-                o.textContent = y + '年'; if (y === 1995) o.selected = true;
-                ySel.appendChild(o); }
-            for (let d = 1; d <= 31; d++) { const o = document.createElement('option');
-                o.value = d;
-                o.textContent = d + '日'; if (d === 15) o.selected = true;
-                dSel.appendChild(o); }
-
-            // ---- 生成命理 + 附近推荐 ----
-            function generateFortune() {
-                const y = parseInt(document.getElementById('birthYear').value);
-                const m = parseInt(document.getElementById('birthMonth').value);
-                const d = parseInt(document.getElementById('birthDay').value);
-                const num = getLifeNumber(y, m, d);
-                const elem = getElement(y);
-                const data = LIFE_MAP[num] || LIFE_MAP[5];
-                const roast = ROAST_MAP[elem] || ROAST_MAP['土'];
-
-                // 更新命理信息
-                document.getElementById('fTag').textContent = '✦ ' + roast.word;
-                document.getElementById('fMain').textContent = data.bean;
-                document.getElementById('fSub').textContent = data.sub;
-                document.getElementById('fLife').textContent = num + ' (' + (LIFE_NAMES[num - 1] || '') + ')';
-                document.getElementById('fElement').textContent = elem + ' (' + (ELEM_NAMES[elem] || '') + ')';
-                document.getElementById('fRoast').textContent = roast.roast;
-                document.getElementById('fTemp').textContent = roast.temp;
-                document.getElementById('fMindful').textContent = getMindfulness(num, elem);
-                document.getElementById('fortuneResult').classList.add('visible');
-
-                // 更新首页摘要
-                document.getElementById('summaryBean').textContent = data.bean;
-
-                // ★ 根据今日推荐豆种匹配附近店铺
-                const nearbyShops = getNearbyShopsByBean(data.bean);
-                renderNearbyShops(nearbyShops);
-
-                if (navigator.vibrate) navigator.vibrate(10);
-            }
-
-            document.getElementById('generateBtn').addEventListener('click', generateFortune);
+            // =========================================================
+            // 六、数据存储（localStorage模拟）
+            // =========================================================
+            const DB = {
+                getRecords() {
+                    try { return JSON.parse(localStorage.getItem('coffee_records')) || []; } catch (e) { return []; }
+                },
+                setRecords(records) {
+                    localStorage.setItem('coffee_records', JSON.stringify(records));
+                },
+                addRecord(record) {
+                    const records = this.getRecords();
+                    record.id = Date.now();
+                    record.created_at = new Date().toISOString();
+                    records.unshift(record);
+                    this.setRecords(records);
+                    return record;
+                },
+                getBirth() {
+                    try { return JSON.parse(localStorage.getItem('coffee_birth')); } catch (e) { return null; }
+                },
+                setBirth(birth) {
+                    localStorage.setItem('coffee_birth', JSON.stringify(birth));
+                    userBirthSet = true;
+                },
+                getOnboardingDone() {
+                    return localStorage.getItem('coffee_onboarding_done') === 'true';
+                },
+                setOnboardingDone() {
+                    localStorage.setItem('coffee_onboarding_done', 'true');
+                },
+                getPushEnabled() {
+                    return localStorage.getItem('coffee_push_enabled') === 'true';
+                },
+                setPushEnabled(val) {
+                    localStorage.setItem('coffee_push_enabled', String(val));
+                },
+                getPushDismissed() {
+                    return localStorage.getItem('coffee_push_dismissed') === 'true';
+                },
+                setPushDismissed() {
+                    localStorage.setItem('coffee_push_dismissed', 'true');
+                }
+            };
 
             // =========================================================
-            // 四、UI 交互控制
+            // 七、渲染函数
+            // =========================================================
+            function renderHome() {
+                const records = DB.getRecords();
+                const container = document.getElementById('homeContent');
+                const birth = DB.getBirth();
+
+                // 更新今日宜喝
+                if (birth) {
+                    const num = getLifeNumber(birth.year, birth.month, birth.day);
+                    const elem = getElement(birth.year);
+                    const data = LIFE_MAP[num] || LIFE_MAP[5];
+                    document.getElementById('summaryBean').textContent = data.full || data.bean;
+                    document.getElementById('summaryBadge').textContent = '✨ 查看解读';
+                    document.getElementById('summaryBadge').className = 'match-badge';
+                    currentFortuneBean = data.bean;
+                } else {
+                    document.getElementById('summaryBean').textContent = '设置生辰，获取专属指引';
+                    document.getElementById('summaryBadge').textContent = '⚙️ 设置';
+                    document.getElementById('summaryBadge').className = 'match-badge setup';
+                }
+
+                if (records.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">☕</span>
+                            <div class="title">还没有记录</div>
+                            <div class="sub">点击下方 ☕ 按钮，记录你的第一杯咖啡</div>
+                            <button class="btn-primary" onclick="document.getElementById('fabButton').click()">开始记录</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                records.slice(0, 10).forEach(r => {
+                    const bean = COFFEE_BEANS.find(b => b.name === r.beanName) || { desc: r.flavor || '' };
+                    html += `
+                        <div class="mock-card" onclick="showToast('📖 查看详情')">
+                            <div class="avatar">${r.emoji || '☕'}</div>
+                            <div class="info">
+                                <div class="title">${r.beanName || '未命名咖啡'}</div>
+                                <div class="desc">${r.flavor || bean.desc || ''}</div>
+                                <div class="meta">${r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</div>
+                            </div>
+                            <span class="badge">${'⭐'.repeat(Math.min(5, Math.round((r.rating || 3))))}</span>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            function renderPersonality() {
+                const records = DB.getRecords();
+                const container = document.getElementById('personalityContent');
+                const count = records.length;
+
+                if (count < 3) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">🌱</span>
+                            <div class="title">记录 ${count} / 3 杯</div>
+                            <div class="sub">记录 3 杯即可解锁初始人格<br>每一杯咖啡都在塑造你的风味人格</div>
+                            <div class="progress-track">
+                                <div class="bar" style="width:${(count/3)*100}%;"></div>
+                            </div>
+                            <div style="margin-top:12px; font-size:13px; color:var(--text-secondary);">还需 ${3-count} 杯</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 简单人格分析（基于记录）
+                const vectors = records.map(r => r.vector || [5, 5, 5, 5, 5, 5, 5, 5]);
+                const avg = [0, 0, 0, 0, 0, 0, 0, 0];
+                vectors.forEach(v => { for (let i = 0; i < 8; i++) avg[i] += (v[i] || 5) / vectors.length; });
+                const flavorNames = ['酸度', '甜感', '苦度', '醇厚度', '果香', '花香', '坚果', '发酵感'];
+                const topIdx = avg.indexOf(Math.max(...avg));
+
+                container.innerHTML = `
+                    <div style="text-align:center; padding:20px 0 30px;">
+                        <span style="font-size:72px; display:block; margin-bottom:12px;">${['🌸','🍊','🌰','☕','🍇','🍯','🍃','🍫'][topIdx] || '🌱'}</span>
+                        <div style="font-size:20px; font-weight:600; color:var(--text-primary);">${['花香探索者','果酸猎人','醇厚鉴赏家','均衡大师','发酵冒险家','甜感收藏家','茶韵品鉴师','浓郁追求者'][topIdx] || '风味探险家'} · ${count}杯</div>
+                        <div style="font-size:14px; color:var(--text-secondary); margin-top:4px;">偏好：${flavorNames[topIdx]} · ${records.length}杯记录</div>
+                        <div style="width:80%; max-width:280px; height:6px; background:var(--bg-secondary); border-radius:6px; margin:16px auto 0; overflow:hidden;">
+                            <div style="width:${Math.min(100, count/10*100)}%; height:100%; background:linear-gradient(90deg, var(--accent-1), var(--accent-2)); border-radius:6px;"></div>
+                        </div>
+                        <div style="margin-top:8px; font-size:13px; color:var(--text-secondary);">下一形态：${count>=10 ? '✨ 已解锁' : count>=5 ? '🌿 风味收藏家 (还需'+(10-count)+'杯)' : '🌱 继续探索 (还需'+(10-count)+'杯)'}</div>
+                    </div>
+                    <div style="background:var(--bg-card); border-radius:14px; padding:16px; border:1px solid var(--card-border); margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:var(--text-secondary); font-size:14px;">已解锁标签</span>
+                            <span style="color:var(--accent-1); font-size:13px;">+${Math.min(3, Math.floor(count/3))} 杯解锁新标签</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+                            ${flavorNames.slice(0, Math.min(4, 2+Math.floor(count/5))).map((f,i) => `
+                                <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--accent-1); color:var(--text-primary);">${['🌸','🍊','🌰','☕'][i]||'🏷️'} ${f}</span>
+                            `).join('')}
+                            ${Array.from({length: Math.max(0, 4 - Math.min(4, 2+Math.floor(count/5)))}).map(() => `
+                                <span style="background:var(--bg-secondary); padding:4px 14px; border-radius:20px; font-size:13px; border:1px solid var(--card-border); color:var(--text-secondary);">⬜ 待解锁</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="text-align:center; margin-top:8px;">
+                        <button class="btn-primary" style="padding:10px 28px; font-size:14px; background:var(--bg-secondary); color:var(--text-secondary); border:1px solid var(--card-border);" onclick="showToast('📤 分享人格结果')">📤 分享人格</button>
+                    </div>
+                    <div class="bottom-hint">— 持续记录，解锁更多 —</div>
+                `;
+            }
+
+            function renderSocial() {
+                const records = DB.getRecords();
+                const container = document.getElementById('socialContent');
+
+                if (records.length < 3) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">🌊</span>
+                            <div class="title">记录更多咖啡，匹配灵魂咖友</div>
+                            <div class="sub">至少需要 3 杯记录才能找到口味相近的人</div>
+                            <div style="font-size:13px; color:var(--text-secondary);">当前 ${records.length} / 3 杯</div>
+                            <div class="progress-track" style="width:60%; max-width:200px;">
+                                <div class="bar" style="width:${(records.length/3)*100}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 模拟匹配
+                const matches = [
+                    { name: '@咖啡探险家', avatar: '🌸', common: '花香 · 果酸', match: 92 },
+                    { name: '@风味猎人', avatar: '🌿', common: '发酵感 · 醇厚', match: 87 },
+                    { name: '@手冲星人', avatar: '🍃', common: '茶感 · 干净', match: 81 },
+                ];
+
+                container.innerHTML = `
+                    <div style="background:var(--bg-card); border-radius:14px; padding:14px 16px; border:1px solid var(--card-border); margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:28px;">🧩</span>
+                        <div>
+                            <div style="font-size:14px; color:var(--text-primary); font-weight:500;">基于风味相似度匹配</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">找到 ${matches.length} 位口味相近的咖友</div>
+                        </div>
+                    </div>
+                    ${matches.map(m => `
+                        <div class="mock-card">
+                            <div class="avatar">${m.avatar}</div>
+                            <div class="info">
+                                <div class="title">${m.name}</div>
+                                <div class="desc">🏆 共同偏好：${m.common}</div>
+                            </div>
+                            <span style="background:rgba(200,154,120,0.12); padding:4px 12px; border-radius:20px; font-size:11px; color:var(--accent-1); border:1px solid var(--card-border-light); flex-shrink:0;">${m.match}% 匹配</span>
+                        </div>
+                    `).join('')}
+                    <div style="text-align:center; padding:12px 0 4px;">
+                        <span style="background:var(--bg-secondary); padding:10px 28px; border-radius:30px; color:var(--accent-1); font-size:14px; border:1px solid var(--card-border); display:inline-block;" onclick="showToast('📨 已发送邀请')">📨 发送「隔空共饮」邀请</span>
+                    </div>
+                    <div class="bottom-hint">— 基于 8 维风味向量匹配 —</div>
+                `;
+            }
+
+            function renderReport() {
+                const records = DB.getRecords();
+                const container = document.getElementById('reportContent');
+
+                const count = records.length;
+
+                // 统计
+                const origins = {};
+                const flavors = {};
+                records.forEach(r => {
+                    const bean = COFFEE_BEANS.find(b => b.name === r.beanName);
+                    if (bean) {
+                        origins[bean.origin] = (origins[bean.origin] || 0) + 1;
+                    }
+                    if (r.flavor) {
+                        r.flavor.split('·').forEach(f => {
+                            const key = f.trim();
+                            if (key) flavors[key] = (flavors[key] || 0) + 1;
+                        });
+                    }
+                });
+                const topOrigin = Object.entries(origins).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+                const topFlavors = Object.entries(flavors).sort((a, b) => b[1] - a[1]).slice(0, 3).map(f => f[0]).join(' · ') ||
+                    '—';
+
+                // 附近推荐（静态展示）
+                const nearbyShops = NEARBY_SHOPS.slice(0, 2);
+
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px;">
+                        <div style="background:var(--bg-card); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border);">
+                            <div style="font-size:22px; font-weight:700; color:var(--text-primary);">${count}</div>
+                            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">总杯数</div>
+                        </div>
+                        <div style="background:var(--bg-card); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border);">
+                            <div style="font-size:22px; font-weight:700; color:var(--text-primary);">${Object.keys(origins).length || 0}</div>
+                            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">探索产地</div>
+                        </div>
+                        <div style="background:var(--bg-card); border-radius:14px; padding:16px 8px; text-align:center; border:1px solid var(--card-border);">
+                            <div style="font-size:22px; font-weight:700; color:var(--text-primary);">${count > 0 ? (records.reduce((s,r) => s + (r.rating||3), 0) / count).toFixed(1) : '—'}</div>
+                            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">平均评分</div>
+                        </div>
+                    </div>
+                    <div style="background:var(--bg-card); border-radius:14px; padding:16px 18px; border:1px solid var(--card-border); margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
+                            <span style="color:var(--text-secondary); font-size:14px;">🌍 最爱产区</span>
+                            <span style="color:var(--text-primary); font-size:14px; font-weight:500;">${topOrigin}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
+                            <span style="color:var(--text-secondary); font-size:14px;">🏷️ 风味标签</span>
+                            <span style="color:var(--text-primary); font-size:14px; font-weight:500;">${topFlavors}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding:8px 0;">
+                            <span style="color:var(--text-secondary); font-size:14px;">📈 本月趋势</span>
+                            <span style="color:#4CAF50; font-size:14px; font-weight:500;">${count > 5 ? '↑ 偏好向浅烘偏移' : '📝 继续积累数据'}</span>
+                        </div>
+                    </div>
+                    ${count > 0 ? `
+                        <div style="display:flex; gap:10px; margin-bottom:12px;">
+                            <button class="refresh-btn" style="flex:1; margin-top:0;" onclick="showToast('📊 导出JSON')">📥 导出数据</button>
+                            <button class="refresh-btn" style="flex:1; margin-top:0;" onclick="showToast('📤 分享报告')">📤 分享报告</button>
+                        </div>
+                    ` : ''}
+                    <div class="section-title">📍 附近 · 风味匹配</div>
+                    ${nearbyShops.map(shop => `
+                        <div class="shop-card">
+                            <div class="thumb">${shop.icon}</div>
+                            <div class="info">
+                                <div class="name">${shop.name}</div>
+                                <div class="address">📍 ${shop.address} · 步行 ${shop.distance}</div>
+                                <div class="tags">
+                                    <span class="highlight">🏷️ 推荐：${shop.beans[0]}</span>
+                                    ${shop.tags.slice(0,2).map(t => `<span>${t}</span>`).join('')}
+                                    <span>⭐ ${shop.rating}</span>
+                                </div>
+                                <div class="reason">💡 ${shop.comment}</div>
+                            </div>
+                            <div class="right">
+                                <div class="score">${shop.rating} <small>/5</small></div>
+                                <span class="match-pct">${['🔥 94%','✨ 87%','🌱 74%','🍃 68%','💎 91%','🌟 83%','☕ 79%'][shop.id % 7]}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <button class="refresh-btn" id="refreshBtn">🔄 刷新附近推荐</button>
+                    <div style="text-align:center; color:var(--text-secondary); opacity:0.3; font-size:11px; padding:12px 0 4px;">— 数据基于大众点评 · 小红书 AI 汇总 —</div>
+                    <div class="bottom-hint">— 数据每日更新 —</div>
+                `;
+            }
+
+            function renderAll() {
+                renderHome();
+                renderPersonality();
+                renderSocial();
+                renderReport();
+            }
+
+            // =========================================================
+            // 八、UI 交互控制
             // =========================================================
             const navItems = document.querySelectorAll('.nav-item:not(.fab)');
             const panels = {
@@ -1836,25 +2717,118 @@
             const mainContent = document.getElementById('mainContent');
             const fortuneModal = document.getElementById('fortuneModal');
             const closeFortune = document.getElementById('closeFortune');
+            const helpBtn = document.getElementById('helpBtn');
 
             function switchTab(tabName) {
                 navItems.forEach(item => { item.classList.toggle('active', item.getAttribute('data-tab') === tabName); });
                 Object.keys(panels).forEach(k => panels[k].classList.toggle('active', k === tabName));
                 mainContent.scrollTop = 0;
                 if (navigator.vibrate) navigator.vibrate(5);
+                // 切换时重新渲染对应面板
+                if (tabName === 'home') renderHome();
+                if (tabName === 'personality') renderPersonality();
+                if (tabName === 'social') renderSocial();
+                if (tabName === 'report') renderReport();
             }
+
             navItems.forEach(item => {
                 item.addEventListener('click', function() { const t = this.getAttribute('data-tab'); if (t) switchTab(
                         t); });
             });
 
+            // ---- 今日宜喝点击 ----
             document.getElementById('fortuneSummary').addEventListener('click', function() {
-                fortuneModal.classList.add('open');
-                generateFortune();
+                const birth = DB.getBirth();
+                if (!birth) {
+                    // 未设置生辰，弹出命理设置并聚焦
+                    fortuneModal.classList.add('open');
+                    // 不自动生成，让用户选择后点击
+                } else {
+                    fortuneModal.classList.add('open');
+                    generateFortune();
+                }
             });
+
+            // ---- 命理弹窗 ----
+            const ySel = document.getElementById('birthYear'),
+                dSel = document.getElementById('birthDay');
+            for (let y = 2026; y >= 1900; y--) { const o = document.createElement('option');
+                o.value = y;
+                o.textContent = y + '年'; if (y === 1995) o.selected = true;
+                ySel.appendChild(o); }
+            for (let d = 1; d <= 31; d++) { const o = document.createElement('option');
+                o.value = d;
+                o.textContent = d + '日'; if (d === 15) o.selected = true;
+                dSel.appendChild(o); }
+
+            function generateFortune() {
+                const y = parseInt(document.getElementById('birthYear').value);
+                const m = parseInt(document.getElementById('birthMonth').value);
+                const d = parseInt(document.getElementById('birthDay').value);
+                const num = getLifeNumber(y, m, d);
+                const elem = getElement(y);
+                const data = LIFE_MAP[num] || LIFE_MAP[5];
+                const roast = ROAST_MAP[elem] || ROAST_MAP['土'];
+
+                // 保存生辰
+                DB.setBirth({ year: y, month: m, day: d });
+
+                document.getElementById('fTag').textContent = '✦ ' + roast.word;
+                document.getElementById('fMain').textContent = data.full || data.bean;
+                document.getElementById('fSub').textContent = data.sub;
+                document.getElementById('fLife').textContent = num + ' (' + (LIFE_NAMES[num - 1] || '') + ')';
+                document.getElementById('fElement').textContent = elem + ' (' + (ELEM_NAMES[elem] || '') + ')';
+                document.getElementById('fRoast').textContent = roast.roast;
+                document.getElementById('fTemp').textContent = roast.temp;
+                document.getElementById('fMindful').textContent = getMindfulness(num, elem);
+                document.getElementById('fortuneResult').classList.add('visible');
+
+                currentFortuneBean = data.bean;
+                document.getElementById('summaryBean').textContent = data.full || data.bean;
+                document.getElementById('summaryBadge').textContent = '✨ 查看解读';
+                document.getElementById('summaryBadge').className = 'match-badge';
+
+                // 附近推荐
+                const nearbyShops = getNearbyShopsByBean(data.bean);
+                renderNearbyShops(nearbyShops);
+
+                if (navigator.vibrate) navigator.vibrate(10);
+                renderAll();
+            }
+
+            document.getElementById('generateBtn').addEventListener('click', generateFortune);
+
+            // 如果已有生辰，自动填充
+            const savedBirth = DB.getBirth();
+            if (savedBirth) {
+                document.getElementById('birthYear').value = savedBirth.year;
+                document.getElementById('birthMonth').value = savedBirth.month;
+                document.getElementById('birthDay').value = savedBirth.day;
+                // 自动生成一次
+                setTimeout(generateFortune, 200);
+            }
+
             closeFortune.addEventListener('click', function() { fortuneModal.classList.remove('open'); });
             fortuneModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
 
+            // ---- 分享今日宜喝 ----
+            document.getElementById('shareFortuneBtn').addEventListener('click', function() {
+                const main = document.getElementById('fMain').textContent;
+                const sub = document.getElementById('fSub').textContent;
+                document.getElementById('shareTitle').textContent = main;
+                document.getElementById('shareSub').textContent = sub;
+                document.getElementById('shareModal').classList.add('open');
+                if (navigator.vibrate) navigator.vibrate(10);
+            });
+
+            document.getElementById('closeShare').addEventListener('click', function() {
+                document.getElementById('shareModal').classList.remove('open');
+            });
+            document.getElementById('shareModal').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('open');
+            });
+
+            // ---- 记录浮层 ----
             fab.addEventListener('click', function(e) {
                 e.preventDefault();
                 overlay.classList.add('open');
@@ -1872,26 +2846,58 @@
                 btn.textContent = '☕ 完成记录';
                 btn.className = 'btn btn-done';
             }
+
             cancelBtn.addEventListener('click', closeOverlay);
             overlay.addEventListener('click', function(e) { if (e.target === overlay) closeOverlay(); });
+
+            helpBtn.addEventListener('click', function() {
+                showToast('💡 单指滑动轮盘，选择你的风味偏好');
+            });
 
             doneBtn.addEventListener('click', function() {
                 if (this.classList.contains('success')) return;
                 const flavor = findClosestFlavor(posX, posY);
+                const vector = posToVector(posX, posY);
+                const bean = COFFEE_BEANS.find(b => b.desc.includes(flavor.main.split('·')[0]) || b.desc.includes(
+                flavor.main)) || COFFEE_BEANS[0];
+
+                // 获取选中的标签
+                const activeTag = document.querySelector('.tag-scroll .tag.active');
+                const roastTag = activeTag ? activeTag.textContent : '中烘';
+
                 if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+
+                // 保存记录
+                const record = {
+                    beanName: bean ? bean.name : '未知豆种',
+                    flavor: flavor.main + ' · ' + flavor.sub,
+                    vector: vector,
+                    rating: Math.round((vector[0] + vector[1] + (10 - vector[2]) + vector[3] + vector[4] + vector[5] +
+                        vector[6] + vector[7]) / 8 / 2 * 10) / 10,
+                    emoji: ['🌺', '🍊', '🌰', '☕', '🍇', '🍯', '🍃', '🍫'][Math.floor(Math.random() * 8)],
+                    roast: roastTag,
+                };
+                DB.addRecord(record);
+
                 this.textContent = '✅ 已记录！';
                 this.className = 'btn btn-done success';
-                console.log('☕ 记录成功！风味：' + flavor.main + '，坐标：(' + posX.toFixed(2) + ', ' + posY.toFixed(2) +
-                    ')');
-                setTimeout(() => { closeOverlay();
-                    setTimeout(() => { this.textContent = '☕ 完成记录';
-                        this.className = 'btn btn-done'; }, 300); }, 700);
+                showToast('☕ 记录成功！' + flavor.main);
+
+                setTimeout(() => {
+                    closeOverlay();
+                    renderAll();
+                    setTimeout(() => {
+                        this.textContent = '☕ 完成记录';
+                        this.className = 'btn btn-done';
+                    }, 300);
+                }, 700);
             });
 
-            let startY = 0;
-            overlay.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; }, { passive: true });
+            // 下滑关闭
+            let startY2 = 0;
+            overlay.addEventListener('touchstart', function(e) { startY2 = e.touches[0].clientY; }, { passive: true });
             overlay.addEventListener('touchmove', function(e) {
-                if (e.touches[0].clientY - startY > 60 && overlay.classList.contains('open')) closeOverlay();
+                if (e.touches[0].clientY - startY2 > 60 && overlay.classList.contains('open')) closeOverlay();
             }, { passive: true });
 
             document.addEventListener('keydown', function(e) {
@@ -1901,6 +2907,7 @@
                 }
             });
 
+            // ---- 快捷标签 ----
             document.querySelectorAll('.tag-scroll .tag').forEach(tag => {
                 tag.addEventListener('click', function() {
                     document.querySelectorAll('.tag-scroll .tag').forEach(t => t.classList.remove('active'));
@@ -1909,33 +2916,250 @@
                 });
             });
 
-            document.getElementById('refreshBtn').addEventListener('click', function() {
-                const reasons = [
-                    '💡 大众点评：“花魁手冲花香炸裂，与你今日命理高度匹配。”',
-                    '💡 小红书：“冰冲瑰夏柑橘蜂蜜味绝了。”',
-                    '💡 用户口碑：“深烘曼特宁的奶油坚果香很正。”',
-                    '💡 咖啡群推荐：“肯尼亚 AA 莓果调性突出。”',
-                    '💡 最新评价：“埃塞豆子新鲜，草莓香气明显。”',
-                ];
-                const bubbles = document.querySelectorAll('.shop-card .reason');
-                bubbles.forEach((b, i) => { b.textContent = reasons[(i + Math.floor(Math.random() * 3)) % reasons
-                        .length]; });
-                const pcts = document.querySelectorAll('.shop-card .match-pct');
-                const vals = ['🔥 96%', '✨ 89%', '🌱 74%'];
-                pcts.forEach((p, i) => { if (i < vals.length) p.textContent = vals[i]; });
-                if (navigator.vibrate) navigator.vibrate(8);
-                const orig = this.textContent;
-                this.textContent = '✅ 已刷新';
-                setTimeout(() => { this.textContent = orig; }, 1000);
+            // ---- 附近刷新 ----
+            document.addEventListener('click', function(e) {
+                if (e.target.id === 'refreshBtn' || e.target.closest('#refreshBtn')) {
+                    const reasons = [
+                        '💡 大众点评：“花魁手冲花香炸裂，与你今日命理高度匹配。”',
+                        '💡 小红书：“冰冲瑰夏柑橘蜂蜜味绝了。”',
+                        '💡 用户口碑：“深烘曼特宁的奶油坚果香很正。”',
+                        '💡 咖啡群推荐：“肯尼亚 AA 莓果调性突出。”',
+                        '💡 最新评价：“埃塞豆子新鲜，草莓香气明显。”',
+                    ];
+                    const bubbles = document.querySelectorAll('.shop-card .reason');
+                    bubbles.forEach((b, i) => { b.textContent = reasons[(i + Math.floor(Math.random() * 3)) %
+                            reasons.length]; });
+                    const pcts = document.querySelectorAll('.shop-card .match-pct');
+                    const vals = ['🔥 96%', '✨ 89%', '🌱 74%'];
+                    pcts.forEach((p, i) => { if (i < vals.length) p.textContent = vals[i]; });
+                    if (navigator.vibrate) navigator.vibrate(8);
+                    const btn = e.target.closest('#refreshBtn');
+                    if (btn) {
+                        const orig = btn.textContent;
+                        btn.textContent = '✅ 已刷新';
+                        setTimeout(() => { btn.textContent = orig; }, 1000);
+                    }
+                    showToast('🔄 已刷新附近推荐');
+                }
             });
 
+            // ---- 推送授权 ----
+            const pushPrompt = document.getElementById('pushPrompt');
+            if (!DB.getPushDismissed() && !DB.getPushEnabled()) {
+                pushPrompt.classList.add('visible');
+            }
+
+            document.getElementById('enablePush').addEventListener('click', function() {
+                if (navigator.vibrate) navigator.vibrate(10);
+                // 模拟浏览器推送授权
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().then(perm => {
+                        if (perm === 'granted') {
+                            DB.setPushEnabled(true);
+                            pushPrompt.classList.remove('visible');
+                            showToast('🔔 已开启每日宜喝提醒');
+                            // 模拟注册推送
+                            console.log('📨 Push subscription registered');
+                        } else {
+                            showToast('❌ 需要授权才能推送通知');
+                        }
+                    });
+                } else if ('Notification' in window && Notification.permission === 'granted') {
+                    DB.setPushEnabled(true);
+                    pushPrompt.classList.remove('visible');
+                    showToast('🔔 已开启每日宜喝提醒');
+                } else {
+                    // 降级：直接标记为已开启（演示）
+                    DB.setPushEnabled(true);
+                    pushPrompt.classList.remove('visible');
+                    showToast('🔔 已开启每日宜喝提醒（演示模式）');
+                }
+            });
+
+            document.getElementById('dismissPush').addEventListener('click', function() {
+                DB.setPushDismissed();
+                pushPrompt.classList.remove('visible');
+            });
+
+            // ---- 反馈功能 ----
+            document.querySelectorAll('.settings-item .right .arrow').forEach(el => {
+                if (el.closest('.settings-item')?.querySelector('.label')?.textContent === '意见反馈') {
+                    el.closest('.settings-item').addEventListener('click', function() {
+                        document.getElementById('feedbackModal').classList.add('open');
+                    });
+                }
+            });
+
+            // 快捷反馈入口（在记录浮层帮助按钮旁，通过长按触发）
+            // 也可以通过页面底部的设置区域，但我们先在导航上加一个隐藏入口
+            // 在首页添加反馈入口
+            const feedbackEntry = document.createElement('div');
+            feedbackEntry.style.cssText =
+                'text-align:center; padding:8px 0; color:var(--text-secondary); opacity:0.3; font-size:12px; cursor:pointer;';
+            feedbackEntry.textContent = '💬 意见反馈';
+            feedbackEntry.addEventListener('click', function() {
+                document.getElementById('feedbackModal').classList.add('open');
+            });
+            // 添加到首页底部
+            const homePanel = document.getElementById('panel-home');
+            const hint = homePanel.querySelector('.bottom-hint');
+            if (hint) {
+                hint.parentNode.insertBefore(feedbackEntry, hint);
+            }
+
+            // ---- 反馈弹窗逻辑 ----
+            const fbModal = document.getElementById('feedbackModal');
+            const fbForm = document.getElementById('fbForm');
+            const fbSuccess = document.getElementById('fbSuccess');
+            const fbTypeBtns = document.querySelectorAll('#fbTypeGroup button');
+            const fbContent = document.getElementById('fbContent');
+            const fbCancel = document.getElementById('fbCancel');
+            const fbSubmit = document.getElementById('fbSubmit');
+            const fbDone = document.getElementById('fbDone');
+
+            let selectedType = 'idea';
+
+            fbTypeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    fbTypeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedType = this.dataset.type;
+                });
+            });
+            // 默认选中第一个
+            fbTypeBtns[0].classList.add('active');
+            selectedType = fbTypeBtns[0].dataset.type;
+
+            fbCancel.addEventListener('click', function() { fbModal.classList.remove('open'); });
+            fbModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+            fbSubmit.addEventListener('click', function() {
+                const content = fbContent.value.trim();
+                if (content.length < 10) {
+                    showToast('📝 请至少输入10个字');
+                    return;
+                }
+                const typeMap = { bug: '🐛 Bug反馈', idea: '💡 功能建议', content: '📝 内容纠错', other: '❤️ 其他' };
+                console.log('📨 反馈提交：', { type: typeMap[selectedType] || selectedType, content });
+                if (navigator.vibrate) navigator.vibrate(10);
+                fbForm.style.display = 'none';
+                fbSuccess.style.display = 'block';
+                showToast('🎉 感谢你的反馈！');
+            });
+
+            fbDone.addEventListener('click', function() {
+                fbModal.classList.remove('open');
+                setTimeout(() => {
+                    fbForm.style.display = 'block';
+                    fbSuccess.style.display = 'none';
+                    fbContent.value = '';
+                }, 300);
+            });
+
+            // ---- 新手引导 ----
+            if (!DB.getOnboardingDone()) {
+                const obOverlay = document.getElementById('onboardingOverlay');
+                const obIcon = document.getElementById('obIcon');
+                const obTitle = document.getElementById('obTitle');
+                const obDesc = document.getElementById('obDesc');
+                const obDots = document.getElementById('obDots');
+                const obNext = document.getElementById('obNext');
+                const obSkip = document.getElementById('obSkip');
+
+                const steps = [{
+                    icon: '☕',
+                    title: '欢迎来到咖啡手记',
+                    desc: '记录每一杯咖啡，发现你的风味人格'
+                }, {
+                    icon: '🎯',
+                    title: '滑动轮盘 · 找到风味',
+                    desc: '单指在轮盘上滑动，系统会自动识别你的风味偏好'
+                }, {
+                    icon: '🔮',
+                    title: '每日宜喝 · 命理指引',
+                    desc: '输入出生日期，获取每日专属咖啡推荐和正念指引'
+                }, {
+                    icon: '🌊',
+                    title: '连接同好 · 分享快乐',
+                    desc: '基于风味相似度，找到口味相近的咖啡爱好者'
+                }, ];
+
+                let stepIndex = 0;
+
+                function updateOnboarding() {
+                    const s = steps[stepIndex];
+                    obIcon.textContent = s.icon;
+                    obTitle.textContent = s.title;
+                    obDesc.textContent = s.desc;
+
+                    const dots = obDots.querySelectorAll('.dot');
+                    dots.forEach((dot, i) => {
+                        dot.classList.toggle('active', i === stepIndex);
+                    });
+
+                    if (stepIndex === steps.length - 1) {
+                        obNext.textContent = '🎉 开始使用';
+                    } else {
+                        obNext.textContent = '下一步 →';
+                    }
+                }
+
+                obOverlay.classList.add('open');
+
+                obNext.addEventListener('click', function() {
+                    if (stepIndex < steps.length - 1) {
+                        stepIndex++;
+                        updateOnboarding();
+                        if (navigator.vibrate) navigator.vibrate(8);
+                    } else {
+                        DB.setOnboardingDone();
+                        obOverlay.classList.remove('open');
+                        showToast('🎉 开始你的咖啡之旅！');
+                        if (navigator.vibrate) navigator.vibrate(15);
+                    }
+                });
+
+                obSkip.addEventListener('click', function() {
+                    DB.setOnboardingDone();
+                    obOverlay.classList.remove('open');
+                    showToast('⏭️ 已跳过引导');
+                });
+
+                updateOnboarding();
+            }
+
+            // =========================================================
+            // 九、初始化
+            // =========================================================
             const now = new Date();
             document.getElementById('todayDate').textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+            document.getElementById('personalityDate').textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+            document.getElementById('socialDate').textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+            document.getElementById('reportDate').textContent = (now.getMonth() + 1) + '月趋势';
 
-            setTimeout(generateFortune, 100);
-            console.log('☕ 咖啡手记 · 自适应色彩版已启动！');
-            console.log('✅ 字体颜色根据背景亮度自动切换，保持清晰可读');
-            console.log('📍 「查看解读」中新增附近同款咖啡店推荐');
+            renderAll();
+
+            console.log('☕ 咖啡手记 v5.0 已启动！');
+            console.log('📦 数据库：' + COFFEE_BEANS.length + ' 款豆种');
+            console.log('📍 附近店铺：' + NEARBY_SHOPS.length + ' 家');
+            console.log('📝 已记录：' + DB.getRecords().length + ' 杯');
+            console.log('🔮 命理状态：' + (DB.getBirth() ? '已设置' : '未设置'));
+
+            // ---- 模拟每日宜喝推送（演示） ----
+            if (DB.getPushEnabled() && DB.getBirth()) {
+                setTimeout(() => {
+                    const birth = DB.getBirth();
+                    const num = getLifeNumber(birth.year, birth.month, birth.day);
+                    const data = LIFE_MAP[num] || LIFE_MAP[5];
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification('☕ 今日宜喝 · ' + data.bean, {
+                            body: data.sub + ' 点击查看完整解读',
+                            icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ctext y=".9em" font-size="90"%3E☕%3C/text%3E%3C/svg%3E'
+                        });
+                    }
+                    console.log('🔔 推送通知：今日宜喝 · ' + data.bean);
+                }, 3000);
+            }
 
         })();
     </script>
